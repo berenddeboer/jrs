@@ -1,13 +1,21 @@
-Idea: only one method per class: combine functions into
-JSR_FILES_ITERATOR for example.
+This is an attempt to use Eiffel to write shell scripts.
 
-But not sure if that will work, would it? JRS_FILES_ITERATOR inherits
-from JRS_ITERATOR which can iterate over a collection G. Perhaps
-inherit from a Gobo iterator as you basically have a collection of
-files over which you can either iterator or do some specific pre-coded
-function.
+Safe shell scripts are not that easy to write, most of them happily
+continue in case of errors.
+
+So why not use Eiffel to it better?
+
+The idea is to write shell scripts the jQuery way. To see how this works.
+
+Examples:
+
+  ls ("*.html").grep ("whatever").words (agent ...)
+
+  ls (<<"system/test.inc", "modules/test.inc">>).each (agent (a_path_name: STRING): BOOLEAN
+    do
+       ...
+     end)
 
 
-JRS:
 
-glob ("*.html").grep ("whatever").words (agent ...)
+State of the code: quite messy. I'm just experimenting at the moment.
