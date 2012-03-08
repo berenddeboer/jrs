@@ -22,7 +22,7 @@ inherit
 
 feature -- Basic
 
-	each (f: FUNCTION [ANY, TUPLE[], BOOLEAN]) is
+	each (f: FUNCTION [ANY, TUPLE[], BOOLEAN])
 		require
 			f_not_void: f /= Void
 		local

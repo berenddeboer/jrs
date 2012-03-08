@@ -1,4 +1,4 @@
-indexing
+note
 
 	description:
 
@@ -34,12 +34,12 @@ feature -- Access
 
 feature -- Command
 
-	lines (f: FUNCTION [ANY, TUPLE[], BOOLEAN]) is
+	lines (f: FUNCTION [ANY, TUPLE[], BOOLEAN])
 		do
 			each (agent do_lines (f))
 		end
 
-	non_comment_lines (f: FUNCTION [ANY, TUPLE[], BOOLEAN]) is
+	non_comment_lines (f: FUNCTION [ANY, TUPLE[], BOOLEAN])
 		do
 			each (agent do_lines (f))
 		end
@@ -47,7 +47,7 @@ feature -- Command
 
 feature {NONE} -- Per item command
 
-	do_lines (f: FUNCTION [ANY, TUPLE[], BOOLEAN]): BOOLEAN is
+	do_lines (f: FUNCTION [ANY, TUPLE[], BOOLEAN]): BOOLEAN
 		require
 			f_not_void: f /= Void
 		do

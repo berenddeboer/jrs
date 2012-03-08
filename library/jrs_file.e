@@ -1,4 +1,4 @@
-indexing
+note
 
 	description:
 
@@ -22,7 +22,7 @@ inherit
 
 feature -- Command
 
-	file (a_file_name: STRING): JRS_STREAM_LINES_ITERATOR is
+	file (a_file_name: STRING): JRS_STREAM_LINES_ITERATOR
 		require
 			readable: is_regular_file (a_file_name)
 		local
