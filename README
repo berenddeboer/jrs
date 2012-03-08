@@ -1,0 +1,27 @@
+Idea: only one method per class: combine functions into
+JSR_FILES_ITERATOR for example.
+
+But not sure if that will work, would it? JRS_FILES_ITERATOR inherits
+from JRS_ITERATOR which can iterate over a collection G. Perhaps
+inherit from a Gobo iterator as you basically have a collection of
+files over which you can either iterator or do some specific pre-coded
+function.
+
+
+JRS:
+
+glob ("*.html").grep ("whatever").words (agent ...)
+
+
+A new kind of Eiffel for writing type safe HTML:
+
+html.
+  head.
+    meta.http_equiv ("Content-Type").content ("text/html; charset=UTF-8").end.
+    title.text ("test").end.
+  end.
+  body.
+    h1.text ("Hello World").end.
+    p.text ("Hello!").end.
+  end.
+end
