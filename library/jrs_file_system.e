@@ -65,12 +65,10 @@ feature -- Iteration
 			until
 				a_set.after
 			loop
-				create path.make_from_string (a_set.item_for_iteration)
+				create path.make_from_string (unescape (a_set.item_for_iteration))
 				path.parse (Void)
-				print ("PATH: " + path.basename + "%N")
 				rx_rx.match (path.basename)
-				print ("  " + rx.has_matched.out + "%N")
-				if rx.has_matched then
+				if rx_rx.has_matched then
 					rx.compile (path.basename)
 					if rx.is_compiled then
 						if path.directory.is_empty then
@@ -92,7 +90,7 @@ feature -- Iteration
 								(dir.item.count = 2 and not equal (dir.item, once "..")) then
 								rx.match (dir.item)
 								if rx.has_matched then
-									found_files.put (dir_prefix + dir.item)
+									found_files.force (dir_prefix + dir.item)
 								end
 								rx.wipe_out
 							end
@@ -102,14 +100,12 @@ feature -- Iteration
 						-- Not a valid regular expression, treat as filename
 						s := a_set.item_for_iteration.twin
 						s.replace_substring_all (once "\", once "")
-						found_files.put (s)
+						found_files.force (s)
 					end
 				else
 					-- No need to check directory for this file, but we
 					-- should remove escape characters.
-					s := a_set.item_for_iteration.twin
-					s.replace_substring_all (once "\", once "")
-					found_files.put (s)
+					found_files.force (unescape (s))
 				end
 				rx_rx.wipe_out
 				a_set.forth
@@ -142,9 +138,16 @@ feature {NONE} -- Implementation
 			-- Match to test if a string contains regular expression characters
 		once
 			create Result.make
-			Result.compile ("\*")
+			Result.compile ("(^|[^\\])[\.\?\*\(\[]")
 		ensure
 			compiled: Result.is_compiled
+		end
+
+	unescape (s: STRING): STRING
+			-- Remove '\' escape character from `s's
+		do
+			Result := s.twin
+			Result.replace_substring_all (once "\", once "")
 		end
 
 end
