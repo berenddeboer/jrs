@@ -55,8 +55,8 @@ feature -- Iteration
 			rx: RX_PCRE_REGULAR_EXPRESSION
 			dir: EPX_DIRECTORY
 			path: EPX_PATH
+			dir_path: STRING
 			dir_prefix: STRING
-			s: STRING
 		do
 			create found_files.make (a_set.count)
 			create rx.make
@@ -65,22 +65,35 @@ feature -- Iteration
 			until
 				a_set.after
 			loop
-				create path.make_from_string (unescape (a_set.item_for_iteration))
+				create path.make_from_raw_string (a_set.item_for_iteration)
 				path.parse (Void)
+
+				debug ("jrs")
+					print ("MATCHING " + path.basename + "%N")
+				end
 				rx_rx.match (path.basename)
 				if rx_rx.has_matched then
+					-- If path is a regular expression, we need to iterate
+					-- the directory
+					debug ("jrs")
+						print ("PATH IS A REGULAR EXPRESSION%N")
+					end
 					rx.compile (path.basename)
 					if rx.is_compiled then
 						if path.directory.is_empty then
-							dir := fs.browse_directory (once ".")
-							dir_prefix := ""
+							dir_path := once "."
+							dir_prefix := once ""
 						else
-							dir := fs.browse_directory (path.directory)
-							dir_prefix := "/" + path.directory
+							dir_path := path.directory
+							dir_prefix := path.directory + once "/"
 						end
+						-- TODO: handle case where browse fails?
+						dir := fs.browse_directory (dir_path)
+						dir.set_continue_on_error
 						from
 							dir.start
 						until
+							not dir.errno.is_ok or else
 							dir.after
 						loop
 							-- Never present . and .. entries
@@ -98,14 +111,12 @@ feature -- Iteration
 						end
 					else
 						-- Not a valid regular expression, treat as filename
-						s := a_set.item_for_iteration.twin
-						s.replace_substring_all (once "\", once "")
-						found_files.force (s)
+						found_files.force (unescape (a_set.item_for_iteration))
 					end
 				else
 					-- No need to check directory for this file, but we
 					-- should remove escape characters.
-					found_files.force (unescape (s))
+					found_files.force (unescape (a_set.item_for_iteration))
 				end
 				rx_rx.wipe_out
 				a_set.forth
