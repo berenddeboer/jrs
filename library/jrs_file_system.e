@@ -23,6 +23,7 @@ inherit {NONE}
 feature -- Status
 
 	is_directory (a_directory: STRING): BOOLEAN
+			-- Uses real uid, not effective, so take care when running setuid.
 		require
 			is_valid_directory_name: is_valid_directory_name (a_directory)
 		do
@@ -30,17 +31,26 @@ feature -- Status
 		end
 
 	is_regular_file (a_file_name: STRING): BOOLEAN
+			-- Uses real uid, not effective, so take care when running setuid.
 		do
 			Result := fs.is_regular_file (a_file_name)
 		end
 
 	is_valid_directory_name (a_directory: STRING): BOOLEAN
+			-- Uses real uid, not effective, so take care when running setuid.
 		do
 			Result := a_directory /= Void and then not a_directory.is_empty
 		ensure
 			definition: Result = (a_directory /= Void and then not a_directory.is_empty)
 		end
 
+	files_exist (a_set: JRS_STRING_SET): BOOLEAN
+			-- Do any of these files exist?
+		require
+			set_not_void: a_set /= Void
+		do
+			Result := not ls (a_set).set.is_empty
+		end
 
 feature -- Iteration
 
@@ -87,9 +97,14 @@ feature -- Iteration
 							dir_path := path.directory
 							dir_prefix := path.directory + once "/"
 						end
+						debug ("jrs")
+							print ("PATH EXPRESSION COMPILES, BROWSING '" + dir_path + "'%N")
+						end
 						-- TODO: handle case where browse fails?
+						-- Now we simply ignore them.
 						dir := fs.browse_directory (dir_path)
 						dir.set_continue_on_error
+						dir.errno.clear_all
 						from
 							dir.start
 						until
@@ -101,6 +116,9 @@ feature -- Iteration
 								dir.item.count > 2 or else
 								(dir.item.count = 1 and dir.item.item (1) /= '.') or else
 								(dir.item.count = 2 and not equal (dir.item, once "..")) then
+								debug ("jrs")
+									print ("  FOUND " + dir.item + "%N")
+								end
 								rx.match (dir.item)
 								if rx.has_matched then
 									found_files.force (dir_prefix + dir.item)
@@ -120,6 +138,9 @@ feature -- Iteration
 				end
 				rx_rx.wipe_out
 				a_set.forth
+			end
+			debug ("jrs")
+				print ("FOUND " + found_files.count.out + " FILES%N")
 			end
 			create Result.make (found_files)
 		end
@@ -149,7 +170,7 @@ feature {NONE} -- Implementation
 			-- Match to test if a string contains regular expression characters
 		once
 			create Result.make
-			Result.compile ("(^|[^\\])[\.\?\*\(\[]")
+			Result.compile ("(^|[^\\])[\.\?\*+\(\[^$]")
 		ensure
 			compiled: Result.is_compiled
 		end
