@@ -2,22 +2,22 @@ note
 
 	description:
 
-		"Ability to iterate over text input streams"
+		"Base class for line iterators."
 
 	library: "John Resig Shell library"
 	author: "Berend de Boer <berend@pobox.com>"
-	copyright: "Copyright (c) 2010, Berend de Boer"
+	copyright: "Copyright (c) 2012, Berend de Boer"
 	license: "MIT License (see LICENSE)"
 
 
-class
+deferred class
 
-	JRS_STREAM_ITERATOR
+	JRS_LINES_ITERATOR
 
 
 inherit
 
-	JRS_ITERATOR [STDC_TEXT_FILE]
+	JRS_ITERATOR [READABLE_STRING_GENERAL]
 
 
 end

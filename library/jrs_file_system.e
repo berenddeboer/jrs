@@ -30,10 +30,10 @@ feature -- Status
 			Result := fs.is_directory (a_directory)
 		end
 
-	is_regular_file (a_file_name: STRING): BOOLEAN
+	is_regular_file (a_file_name: READABLE_STRING_GENERAL): BOOLEAN
 			-- Uses real uid, not effective, so take care when running setuid.
 		do
-			Result := fs.is_regular_file (a_file_name)
+			Result := fs.is_regular_file (a_file_name.out)
 		end
 
 	is_valid_directory_name (a_directory: STRING): BOOLEAN
@@ -53,6 +53,24 @@ feature -- Status
 		end
 
 feature -- Iteration
+
+	file (a_name: READABLE_STRING_GENERAL): JRS_LINES_OUTPUT_ITERATOR
+			-- Include `a_name' in set if it is an existing file.
+		require
+			name_not_empty: a_name /= Void and then not a_name.is_empty
+		local
+			input: JRS_LINES_INPUT_ITERATOR
+			set: DS_LINKED_LIST [READABLE_STRING_GENERAL]
+		do
+			create set.make
+			if is_regular_file (a_name) then
+				set.put_last (a_name)
+			end
+			create input.make_from_linear (set)
+			create Result.make (input)
+		ensure
+			not_void: Result /= Void
+		end
 
 	ls (a_set: JRS_STRING_SET): JRS_STRING_ITERATOR
 			-- Non-recursive directory listing. Only files matcing `re'
@@ -75,7 +93,7 @@ feature -- Iteration
 			until
 				a_set.after
 			loop
-				create path.make_from_raw_string (a_set.item_for_iteration)
+				create path.make_from_raw_string (a_set.item_for_iteration.out)
 				path.parse (Void)
 
 				debug ("jrs")
@@ -175,11 +193,18 @@ feature {NONE} -- Implementation
 			compiled: Result.is_compiled
 		end
 
-	unescape (s: STRING): STRING
+	unescape (s: READABLE_STRING_GENERAL): READABLE_STRING_GENERAL
 			-- Remove '\' escape character from `s's
+		require
+			s_not_void: s /= Void
+		local
+			t: STRING
 		do
-			Result := s.twin
-			Result.replace_substring_all (once "\", once "")
+			t := s.out
+			t.replace_substring_all (once "\", once "")
+			Result := t
+		ensure
+			not_void: Result /= Void
 		end
 
 end

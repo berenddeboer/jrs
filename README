@@ -19,3 +19,14 @@ Examples:
 
 
 State of the code: quite messy. I'm just experimenting at the moment.
+
+
+For example why do I have JRS_LINES_INPUT_ITERATOR and
+JRS_LINES_OUTPUT_ITERATOR as well as JRS_STRING_ITERATOR?
+
+Possibly because the JRS_LINES_INPUT_ITERATOR allows for not all lines
+to be read. But doesn't that mean I should get rid of
+JRS_STRING_ITERATOR?
+
+Perhaps rename JRS_LINES_OUTPUT_ITERATOR to JRS_LINES_ITERATOR to make
+clear this is a class that iterates over lines (strings).

@@ -20,6 +20,16 @@ inherit
 	JRS_BASE
 
 
+inherit {NONE}
+
+	MEMORY
+		redefine
+			dispose
+		end
+
+  UC_SHARED_STRING_EQUALITY_TESTER
+
+
 feature -- Command
 
 	execute_sql (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE)
@@ -30,10 +40,41 @@ feature -- Command
 			stmt: JRS_ECLI_STATEMENT
 			sql: STRING
 		do
-			sql := format_sql (expand_env_vars (an_sql), a_parameters)
+			sql := format_sql (an_sql, a_parameters)
+			create stmt.make (session (a_data_source))
+			debug ("jrs-print-sql")
+				print (sql + "%N")
+			end
+			stmt.set_sql (sql)
+			stmt.execute
+			stmt.close
+		rescue
+			-- Print SQL in case something failed
+			if stmt /= Void and then not stmt.is_ok then
+				print ("SQL query failed: " + sql + "%N")
+				print ("Error message: " + stmt.diagnostic_message + "%N")
+			end
+		end
+
+	set_row (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE; a_row: TUPLE [])
+			-- Execute query, and retrieve a single row if query returns
+			-- results, and put this in `a_row'.
+		require
+			data_source_not_empty: a_data_source /= Void and then not a_data_source.is_empty
+			not_empty: an_sql /= Void and then not an_sql.is_empty
+			row_not_empty: a_row /= Void
+		local
+			stmt: JRS_ECLI_STATEMENT
+			sql: STRING
+		do
+			sql := format_sql (an_sql, a_parameters)
 			create stmt.make (session (a_data_source))
 			stmt.set_sql (sql)
 			stmt.execute
+			if stmt.is_executed and then stmt.has_result_set then
+				stmt.tuple_bind (a_row)
+				stmt.start
+			end
 			stmt.close
 		end
 
@@ -50,23 +91,47 @@ feature -- Status
 			stmt: JRS_ECLI_STATEMENT
 			sql: STRING
 		do
-			sql := format_sql (expand_env_vars (an_sql), a_parameters)
+			sql := format_sql (an_sql, a_parameters)
 			create stmt.make (session (a_data_source))
 			stmt.set_sql (sql)
 			stmt.execute
-			create Result.make
-			if stmt.is_executed and then stmt.has_result_set then
-				stmt.tuple_bind (a_row_format)
-				from
-					stmt.start
-				until
-					stmt.after
-				loop
-					Result.put_last (a_row_format.twin)
-					stmt.forth
-				end
-			end
-			stmt.close
+			create Result.make (stmt, a_row_format)
+		end
+
+	query_value (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE): detachable STRING
+			-- `an_sql' should be a query that returns a single value
+			-- (more values are ignored) and a single row (more rows are
+			-- ignored).
+			-- If the query does not return any rows, Void is returned.
+		require
+			data_source_not_empty: a_data_source /= Void and then not a_data_source.is_empty
+			not_empty: an_sql /= Void and then not an_sql.is_empty
+		local
+			single_value: TUPLE [id: detachable STRING]
+		do
+			create single_value
+			set_row (a_data_source, an_sql, a_parameters, single_value)
+			Result := single_value.id
+		end
+
+	query_set (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE): DS_HASH_SET [STRING]
+			-- `an_sql' should be a query that returns a single value
+			-- (more values are ignored).
+			-- The value for every row is returned as a set
+		require
+			data_source_not_empty: a_data_source /= Void and then not a_data_source.is_empty
+			not_empty: an_sql /= Void and then not an_sql.is_empty
+		local
+			single_value: TUPLE [id: detachable STRING]
+		do
+			create single_value
+			create temp_set.make (16)
+			temp_set.set_equality_tester (string_equality_tester)
+			query (a_data_source, an_sql, a_parameters, single_value).rows (agent (a_row: TUPLE [id: detachable STRING]; other: JRS_ROWS_ITERATOR_DATA): BOOLEAN
+				do
+				  temp_set.force (a_row.id)
+				end)
+			Result := temp_set
 		end
 
 	session (a_data_source: STRING): ECLI_SESSION
@@ -92,7 +157,7 @@ feature -- Status
 					stderr.put_line ("Error message: " + my_session.diagnostic_message)
 					exit_with_failure
 				end
-				data_sources.put_last (my_session, a_data_source)
+				data_sources.force_last (my_session, a_data_source)
 				setup_connection (a_data_source)
 			end
 			Result := data_sources.item (a_data_source)
@@ -113,9 +178,33 @@ feature -- Status
 			-- The ODBC connection must specify 'charset=utf8'
 		end
 
+
+feature -- Cleanup
+
+	dispose
+			-- Close handle if owner.
+		do
+			if data_sources /= Void then
+				from
+					data_sources.start
+				until
+					data_sources.after
+				loop
+					if data_sources.item_for_iteration.is_connected then
+						data_sources.item_for_iteration.disconnect
+					end
+					data_sources.forth
+				end
+				data_sources := Void
+			end
+		end
+
+
 feature {NONE} -- Implementation
 
 	data_sources: DS_HASH_TABLE [ECLI_SESSION, STRING]
+
+	temp_set: DS_HASH_SET [STRING]
 
 
 end

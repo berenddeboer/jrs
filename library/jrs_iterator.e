@@ -10,19 +10,14 @@ note
 	license: "MIT License (see LICENSE)"
 
 
-class
+deferred class
 
 	JRS_ITERATOR [G]
 
 
-inherit
-
-	DS_LINKED_LIST [G]
-
-
 feature -- Basic
 
-	each (f: FUNCTION [ANY, TUPLE[], BOOLEAN])
+	each (f: FUNCTION [ANY, TUPLE[G], BOOLEAN])
 		require
 			f_not_void: f /= Void
 		local
@@ -34,10 +29,41 @@ feature -- Basic
 				stop or else
 				after
 			loop
-				f.call ([])
+				f.call ([last_item])
 				stop := f.last_result
 				forth
 			end
+		end
+
+
+feature -- Status
+
+	after: BOOLEAN
+		deferred
+		end
+
+
+feature -- Access
+
+	last_item: G
+		deferred
+		end
+
+
+feature -- Movement
+
+	start
+		require
+			not_after: not after
+		deferred
+		ensure
+			last_item_not_void: not after implies last_item /= Void
+		end
+
+	forth
+		require
+			not_after: not after
+		deferred
 		end
 
 end

@@ -15,40 +15,52 @@ class
 	JRS_ROWS_ITERATOR [G -> TUPLE]
 
 
-inherit
-
-	JRS_TUPLE_ITERATOR [G]
-
-
 create
 
-	make,
-	make_from_array
+	make
+
+
+feature {NONE} -- Initialisation
+
+	make (a_stmt: JRS_ECLI_STATEMENT; a_row_format: G)
+		require
+			not_void: a_stmt /= Void
+			a_row_format_not_void: a_row_format /= Void
+		do
+			stmt := a_stmt
+			row_format := a_row_format
+		end
 
 
 feature -- Access
 
 	config: JRS_ROWS_ITERATOR_DATA
 
+	row_format: G
+
+	stmt: JRS_ECLI_STATEMENT
+
+
 feature -- Command
 
 	rows (f: FUNCTION [ANY, TUPLE[], BOOLEAN])
-		do
-			create config.make (Current)
-			each (agent do_row (f))
-		end
-
-
-feature {NONE} -- Per item command
-
-	do_row (f: FUNCTION [ANY, TUPLE[], BOOLEAN]): BOOLEAN
-		require
-			f_not_void: f /= Void
 		local
-			t: like item_for_iteration
+			stop: BOOLEAN
 		do
-			t := item_for_iteration
-			f.call ([t, config])
+			if stmt.is_executed and then stmt.has_result_set then
+				stmt.tuple_bind (row_format)
+				create config.make (Current)
+				from
+					stmt.start
+				until
+					stop or else stmt.after
+				loop
+					f.call ([row_format, config])
+					stop := f.last_result
+					stmt.forth
+				end
+			end
+			stmt.close
 		end
 
 

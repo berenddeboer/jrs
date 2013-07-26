@@ -43,6 +43,8 @@ feature -- Environment variables
 
 	env (a_name: STRING): STRING
 			-- Value of environment variable `a_name'
+		require
+			valid_name: a_name /= Void and then not a_name.is_empty
 		local
 			e: STDC_ENV_VAR
 		do
@@ -135,10 +137,37 @@ feature -- Environment variables
 
 feature -- String formatting
 
-	valid_format (s: STRING; a_parameters: TUPLE): BOOLEAN
+	valid_format (s: STRING; a_parameters: detachable TUPLE): BOOLEAN
+		local
+			format_string_count: INTEGER
 		do
-			-- no checks done yet
-			Result := true
+			if s /= Void then
+				-- no checks done yet
+				format_string_check.match (s)
+				if format_string_check.has_matched then
+					from
+					until
+						not format_string_check.has_matched
+					loop
+						if format_string_check.captured_substring (1).item (1) /= '$' then
+							format_string_count := format_string_count + 1
+						end
+						format_string_check.next_match
+					end
+					if a_parameters /= Void then
+						Result := a_parameters.count = format_string_count
+					else
+						Result := format_string_count = 0
+					end
+				else
+					Result := True -- No match means no format strings or non recognised/handled
+				end
+				format_string_check.wipe_out
+			else
+				Result := True
+			end
+		ensure
+			void_is_ok: s = Void and then (a_parameters = Void or else a_parameters.count = 0) implies Result
 		end
 
 	format (s: STRING; a_parameters: TUPLE): STRING
@@ -166,12 +195,14 @@ feature -- String formatting
 
 	do_format (s: STRING; a_parameters: TUPLE; an_escape_strings: BOOLEAN): STRING
 			-- `s' with replacement indicators replaced by values from
-			-- `a_parameters'; if `an_escape_strings' then any string
-			-- replacements are escaped.
+			-- `a_parameters';
+			-- if `an_escape_strings' then any string replacements are
+			-- escaped in an attempt to make them safe to be used for
+			-- dynamically generated sql.
 		require
 			parameters_valid: valid_format (s, a_parameters)
 		local
-			convert_to_utf8: BOOLEAN
+			-- convert_to_utf8: BOOLEAN
 			i: INTEGER
 			parameter: INTEGER
 			my_s: detachable STRING
@@ -179,13 +210,20 @@ feature -- String formatting
 			a: detachable ANY
 			c: INTEGER
 		do
-			if s /= Void then
-				convert_to_utf8 := ANY_.same_types (s, once "")
-				if convert_to_utf8 then
-					create {UC_STRING} Result.make_from_string (s)
-				else
-					Result := s.twin
-				end
+			if a_parameters = Void or else a_parameters.count = 0 then
+				Result := s
+			elseif s /= Void then
+				-- I used to have this, but not sure this is useful or
+				-- safe as we have to assume utf8 in STRING. That's
+				-- perhaps limiting. Much better to have charset=utf8 in
+				-- odbc.ini and not assume any charset if we can avoid that.
+				-- convert_to_utf8 := ANY_.same_types (s, once "")
+				-- if convert_to_utf8 then
+				-- 	create {UC_STRING} Result.make_from_utf8 (s)
+				-- else
+				-- 	Result := s.twin
+				-- end
+				Result := s.twin
 				from
 					i := 1
 					parameter := 1
@@ -194,7 +232,7 @@ feature -- String formatting
 				loop
 					if Result.item (i) = '$' then
 						inspect Result.item (i + 1)
-						when 's' then
+						when 's', 't' then
 							c := Result.count
 							my_s ?= a_parameters.reference_item (parameter)
 							if my_s = Void then
@@ -205,9 +243,8 @@ feature -- String formatting
 									Result.replace_substring (a_parameters.reference_item (parameter).out, i, i + 1)
 								end
 							else
-								if an_escape_strings then
-									my_s := STRING_.as_string (my_s)
-									my_s.replace_substring_all (once "'", once "''")
+								if an_escape_strings and then Result.item (i + 1) /= 't' then
+									my_s := aliased_quote_sql_string (my_s)
 								end
 								Result.replace_substring (my_s, i, i + 1)
 							end
@@ -233,17 +270,20 @@ feature -- String formatting
 								Result.replace_substring (once "", i, i + 1)
 							end
 							parameter := parameter + 1
+						when '$' then
+							-- Skip quoted format character
+							i := i + 1
 						else
-							-- ignore
+							-- ignore all else
 						end
 					end
 					i := i + 1
 				variant
 					Result.count - i + 1
 				end
-				if convert_to_utf8 then
-					Result := STRING_.as_string (Result)
-				end
+				-- if convert_to_utf8 then
+				-- 	Result := STRING_.as_string (Result)
+				-- end
 			end
 		ensure
 			only_void_if: (s = Void) = (Result = Void)
@@ -252,27 +292,27 @@ feature -- String formatting
 
 feature -- String manipulation
 
-	split (s: STRING; on: CHARACTER): DS_LIST [STRING]
+	split (s: READABLE_STRING_GENERAL; on: CHARACTER): DS_LIST [READABLE_STRING_GENERAL]
 			-- `s' split into elements divided by `on' if `s' is not Void;
 			-- If `on' does not appear in `s', an array with one element
 			-- containing `s' will be returned;
 			-- if `s' is Void an empty array will be returned
 		local
 			p, start: INTEGER
-			tmp_string: STRING
+			tmp_string: like s
 		do
-			create {DS_LINKED_LIST [STRING]} Result.make
+			create {DS_LINKED_LIST [READABLE_STRING_GENERAL]} Result.make
 			if s /= Void and then not s.is_empty then
 				from
 					start := 1
-					p := s.index_of (on, start)
+					p := s.index_of_code (on.natural_32_code, start)
 				until
 					p = 0
 				loop
 					tmp_string := s.substring (start, p-1)
 					Result.put_last (tmp_string)
 					start := p + 1
-					p := s.index_of (on, start)
+					p := s.index_of_code (on.natural_32_code, start)
 				variant
 					(s.count + 1) - start
 				end
@@ -303,14 +343,14 @@ feature -- String manipulation
 
 feature -- Regular expressions
 
-	is_valid_regex (a_regex: STRING): BOOLEAN
+	is_valid_regex (a_regex: READABLE_STRING_GENERAL): BOOLEAN
 			-- Is `a_regex' a valid regular expression?
 		local
 			rx: RX_PCRE_REGULAR_EXPRESSION
 		do
 			if a_regex /= Void and then not a_regex.is_empty then
 				create rx.make
-				rx.compile (a_regex)
+				rx.compile (a_regex.out)
 				Result := rx.is_compiled
 			end
 		end
@@ -333,6 +373,60 @@ feature -- Regular expressions
 				t.append_string (replacement)
 				Result := rx.replace (t)
 			end
+		end
+
+	aliased_quote_sql_string (s: STRING): STRING
+			-- Quote any quotable characters in `s' so it is safe for
+			-- inserting into dynamically created SQL
+		require
+			s_not_void: s /= Void
+		do
+			Result := s.twin
+			Result.replace_substring_all (once "'", once "''")
+			Result.replace_substring_all (once "\", once "\\")
+		end
+
+	quote_format_strings (s: attached STRING): STRING
+			-- If `s' has any '$' characters, quote them
+		require
+			s_not_void: s /= Void
+		local
+			i: INTEGER
+		do
+			Result := s
+			from
+				i := 1
+			until
+				i > Result.count
+			loop
+				if Result.item (i) = '$' then
+					if Result = s then
+						Result := s.twin
+					end
+					Result.insert_character ('$', i + 1)
+					i := i + 2
+				else
+					i := i + 1
+				end
+			variant
+				Result.count - i + 1
+			end
+		ensure
+			not_void: Result /= Void
+			parameters_valid: valid_format (Result, Void)
+		end
+
+
+feature {NONE} -- Implementation
+
+	format_string_check: RX_PCRE_REGULAR_EXPRESSION
+			-- Regular expressions to validate format strings
+		once
+			create Result.make
+			Result.compile ("\$([stib\$])")
+		ensure
+			not_void: Result /= Void
+			compiled: Result.is_compiled
 		end
 
 

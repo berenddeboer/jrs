@@ -15,17 +15,19 @@ class
 	JRS_RESOLVER
 
 
-inherit
+inherit {NONE}
 
 	XM_SHARED_CATALOG_MANAGER
-		export
-			{NONE} all
-		end
+
+	UT_SHARED_URL_ENCODING
 
 
 feature -- Resolver
 
 	url_to_stream (a_url: STRING): detachable KI_CHARACTER_INPUT_STREAM
+		require
+			a_url_not_empty: a_url /= Void and then not a_url.is_empty
+			a_url_valid: not Url_encoding.has_excluded_characters (a_url)
 		do
 			resolver.resolve_uri (a_url)
 			Result := resolver.last_stream

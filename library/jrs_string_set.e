@@ -17,7 +17,7 @@ class
 
 inherit
 
-	DS_HASH_SET [STRING]
+	DS_HASH_SET [READABLE_STRING_GENERAL]
 
 
 create
@@ -31,13 +31,13 @@ create
 
 convert
 
-	make_from_string ({STRING}),
+	make_from_string ({READABLE_STRING_GENERAL}),
 	make_from_array ({ARRAY [STRING]})
 
 
 feature {NONE} -- Initialisation
 
-	make_from_string (s: STRING)
+	make_from_string (s: READABLE_STRING_GENERAL)
 		do
 			make (1)
 			put (s)

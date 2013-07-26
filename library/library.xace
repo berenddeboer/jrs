@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<library name="jrs" prefix="jrs_">
+
+  <description>
+    description: "Xace file for the JRS Library"
+    author:      "Berend de Boer [berend@pobox.com]"
+    copyright:   "Copyright (c) 2012, Berend de Boer"
+  </description>
+
+  <cluster name="jrs" location="${JRS}/library">
+    <cluster name="iterators"/>
+  </cluster>
+
+</library>
