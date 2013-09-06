@@ -127,7 +127,9 @@ feature -- Commands
 		end
 
 	tuple (a_tuple_type: TUPLE): JRS_TUPLE_OUTPUT_ITERATOR
-			-- Tuple iterator matching tuple `a_tuple_type' for every line
+			-- Tuple iterator matching tuple `a_tuple_type' for every
+			-- line, using `field_separator' to split the line into
+			-- component
 		require
 			a_tuple_type_not_void: a_tuple_type /= Void
 			field_separator_set: field_separator /= '%U'
@@ -182,6 +184,8 @@ feature -- Commands
 					tuples.put_last (t)
 				end)
 			create Result.make (tuples)
+		ensure
+			not_void: Result /= Void
 		end
 
 
