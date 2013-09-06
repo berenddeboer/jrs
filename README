@@ -30,3 +30,7 @@ JRS_STRING_ITERATOR?
 
 Perhaps rename JRS_LINES_OUTPUT_ITERATOR to JRS_LINES_ITERATOR to make
 clear this is a class that iterates over lines (strings).
+
+
+JRS_LINES_OUTPUT_ITERATOR should inherit from JRS_ITERATOR and be
+renamed to JRS_LINES_ITERATOR. The each function should be as from JRS_ITERATOR, the each that gives iterator as parameter should be called each2.

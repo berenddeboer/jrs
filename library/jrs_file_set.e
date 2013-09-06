@@ -50,6 +50,7 @@ feature {NONE} -- Initialisation
 				s.after
 			loop
 				create text.make (s.item_for_iteration.out)
+				text.set_continue_on_error
 				put_last (text)
 				s.forth
 			end
