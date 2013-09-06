@@ -54,7 +54,7 @@ feature -- Status
 
 feature -- Iteration
 
-	file (a_name: READABLE_STRING_GENERAL): JRS_LINES_OUTPUT_ITERATOR
+	if_file (a_name: READABLE_STRING_GENERAL): JRS_LINES_OUTPUT_ITERATOR
 			-- Include `a_name' in set if it is an existing file.
 		require
 			name_not_empty: a_name /= Void and then not a_name.is_empty
