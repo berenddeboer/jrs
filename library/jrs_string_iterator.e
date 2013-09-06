@@ -68,48 +68,17 @@ feature -- Iterations
 			-- read, iterate over its line. Ignore files that cannot be read.
 			-- Not returning a set as this could drastically increase
 			-- memory consumption.
-		obsolete	"2013-07-25: use files to turn string into a set of text files"
+		obsolete	"2013-07-25: use `files'.`lines' to first switch to a set of text files and returning its lines."
 		require
 			callback_not_void: f /= Void
-		local
-			-- stop: BOOLEAN
-			-- text: STDC_TEXT_FILE
-			-- input: JRS_LINES_INPUT_ITERATOR
-			-- iterator: JRS_LINES_OUTPUT_ITERATOR
 		do
 			files.lines (f)
-			-- from
-			-- 	set.start
-			-- until
-			-- 	stop or else set.after
-			-- loop
-			-- 	create text.make (set.item_for_iteration.out)
-			-- 	text.set_continue_on_error
-			-- 	text.open_read (set.item_for_iteration.out)
-			-- 	if text.is_open_read then
-			-- 		create input.make_from_stream (text)
-			-- 		create iterator.make (input)
-			-- 		iterator.each (f)
-			-- 		text.close
-			-- 	end
-			-- 	set.forth
-			-- end
 		end
 
 
 feature -- Signatures
 
 	each_iterator: FUNCTION [ANY, TUPLE[READABLE_STRING_GENERAL], BOOLEAN]
-
-
-feature {NONE} -- Implementation
-
-	-- fs: SUS_FILE_SYSTEM
-	-- 	once
-	-- 		create Result
-	-- 	ensure
-	-- 		not_void: Result /= Void
-	-- 	end
 
 
 invariant
