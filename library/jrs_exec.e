@@ -8,8 +8,6 @@ note
 	author: "Berend de Boer <berend@pobox.com>"
 	copyright: "Copyright (c) 2011, Berend de Boer"
 	license: "MIT License (see LICENSE)"
-	date: "$Date$"
-	revision: "$Revision$"
 
 
 class
@@ -22,7 +20,22 @@ inherit
 	JRS_BASE
 
 
-feature
+feature -- Run things
+
+	exec (a_shell_command: STRING): JRS_LINES_OUTPUT_ITERATOR
+			-- Run command, return stdout as lines.
+		local
+			p: POSIX_EXEC_PROCESS
+			input_iterator: JRS_LINES_INPUT_ITERATOR
+		do
+			create p.make_from_command_line (a_shell_command)
+			p.set_capture_output (True)
+			p.execute
+			create input_iterator.make_from_stream (p.stdout)
+			create Result.make (input_iterator)
+		ensure
+			not_void: Result /= Void
+		end
 
 	run (a_shell_command: STRING)
 		require

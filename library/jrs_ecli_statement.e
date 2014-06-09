@@ -24,7 +24,10 @@ inherit
 
 inherit {NONE}
 
-	ECLI_TYPE_CONSTANTS
+ECLI_TYPE_CONSTANTS
+		undefine
+			default_create
+		end
 
 
 create
@@ -48,9 +51,7 @@ feature -- Basic operations
 			appropriate_tuple: is_fields_tuple (a_parameters) or else a_parameters.count = result_columns_count
 		do
 			results_tuple := a_parameters
-			if
-				results_description = Void or else
-				results_description.count = result_columns_count
+			if results_description.count /= result_columns_count
 			then
 				describe_results
 			end
@@ -120,7 +121,7 @@ feature {NONE} -- Implementation
 				if descr.size = 0 or else descr.size * 4 > maximum_string_size then
 					create {ECLI_UTF8_STRING} column.make_force_maximum_capacity (maximum_string_size)
 				else
-					create {ECLI_UTF8_STRING} column.make_force_maximum_capacity (descr.size * 4)
+					create {ECLI_UTF8_STRING} column.make_force_maximum_capacity ((descr.size * 4).to_integer_32)
 				end
 				v.put (column, i)
 				i := i + 1
@@ -166,14 +167,14 @@ feature {NONE} -- Implementation
 						if descr.size = 0 or else descr.size * 4 > maximum_string_size then
 							create {ECLI_LONGVARCHAR} column.make_force_maximum_capacity (maximum_string_size)
 						else
-							create {ECLI_LONGVARCHAR} column.make_force_maximum_capacity (descr.size * 4)
+							create {ECLI_LONGVARCHAR} column.make_force_maximum_capacity ((descr.size * 4).to_integer_32)
 						end
 					elseif results_tuple.valid_type_for_index (uc_string_type, i) then
 						-- How do we know if our strings are UTF8?
 						if descr.size = 0 or else descr.size * 4 > maximum_string_size then
 							create {ECLI_UTF8_STRING} column.make_force_maximum_capacity (maximum_string_size)
 						else
-							create {ECLI_UTF8_STRING} column.make_force_maximum_capacity (descr.size * 4)
+							create {ECLI_UTF8_STRING} column.make_force_maximum_capacity ((descr.size * 4).to_integer_32)
 						end
 
 					elseif results_tuple.valid_type_for_index (date_time_type, i) then
@@ -216,10 +217,8 @@ feature {NONE} -- Implementation
 		local
 			i: INTEGER
 			v: ECLI_VALUE
-			h: like fields_anchor
 		do
-			h ?= results_tuple.item (results_tuple.lower)
-			if h /= Void then
+			if attached {like fields_anchor} results_tuple.item (results_tuple.lower) as h then
 				h.wipe_out
 				from
 					i := results_description.lower

@@ -205,7 +205,7 @@ feature -- String formatting
 			-- convert_to_utf8: BOOLEAN
 			i: INTEGER
 			parameter: INTEGER
-			my_s: detachable STRING
+			my_ss: STRING
 			my_b: BOOLEAN
 			a: detachable ANY
 			c: INTEGER
@@ -234,19 +234,20 @@ feature -- String formatting
 						inspect Result.item (i + 1)
 						when 's', 't' then
 							c := Result.count
-							my_s ?= a_parameters.reference_item (parameter)
-							if my_s = Void then
+							if attached {STRING} a_parameters.reference_item (parameter) as my_s then
+								if an_escape_strings and then Result.item (i + 1) /= 't' then
+									my_ss := aliased_quote_sql_string (my_s)
+								else
+									my_ss := my_s
+								end
+								Result.replace_substring (my_ss, i, i + 1)
+							else
 								a := a_parameters.reference_item (parameter)
 								if a = Void then
 									Result.replace_substring (once "", i, i + 1)
 								else
 									Result.replace_substring (a_parameters.reference_item (parameter).out, i, i + 1)
 								end
-							else
-								if an_escape_strings and then Result.item (i + 1) /= 't' then
-									my_s := aliased_quote_sql_string (my_s)
-								end
-								Result.replace_substring (my_s, i, i + 1)
 							end
 							i := i + (Result.count - c + 1)
 							parameter := parameter + 1
@@ -296,30 +297,50 @@ feature -- String manipulation
 			-- `s' split into elements divided by `on' if `s' is not Void;
 			-- If `on' does not appear in `s', an array with one element
 			-- containing `s' will be returned;
+			-- The behaviour differs slightly if `on' is white space or
+			-- not: if it is white space, consecutive occurences of `on'
+			-- are counted as one, and beginning and ending white space
+			-- is removed, before splitting.
 			-- if `s' is Void an empty array will be returned
 		local
 			p, start: INTEGER
+			t: like s
 			tmp_string: like s
+			white_space: BOOLEAN
 		do
 			create {DS_LINKED_LIST [READABLE_STRING_GENERAL]} Result.make
 			if s /= Void and then not s.is_empty then
+				white_space := is_white_space (on)
+				if white_space then
+					t := trim (s)
+				else
+					t := s
+				end
 				from
 					start := 1
-					p := s.index_of_code (on.natural_32_code, start)
+					p := t.index_of_code (on.natural_32_code, start)
 				until
 					p = 0
 				loop
-					tmp_string := s.substring (start, p-1)
+					tmp_string := t.substring (start, p-1)
 					Result.put_last (tmp_string)
 					start := p + 1
-					p := s.index_of_code (on.natural_32_code, start)
+					if white_space then
+						from
+						until
+							t.code (start) /= on.natural_32_code
+						loop
+							start:= start +1
+						end
+					end
+					p := t.index_of_code (on.natural_32_code, start)
 				variant
-					(s.count + 1) - start
+					(t.count + 1) - start
 				end
 
 				-- Last element or entire string
-				if start <= s.count then
-					tmp_string := s.substring (start, s.count)
+				if start <= t.count then
+					tmp_string := t.substring (start, s.count)
 					Result.put_last (tmp_string)
 				end
 			end
@@ -328,11 +349,11 @@ feature -- String manipulation
 			empty_on_void: s = Void implies Result.is_empty
 		end
 
-	trim (s: STRING): STRING
+	trim (s: READABLE_STRING_GENERAL): STRING
 			-- `s' with leading and trailing white space removed
 		do
 			if s /= Void then
-				Result := s.twin
+				create Result.make_from_string (s.as_string_8)
 				Result.left_adjust
 				Result.right_adjust
 			end
@@ -418,6 +439,11 @@ feature -- Regular expressions
 
 
 feature {NONE} -- Implementation
+
+	is_white_space (c: CHARACTER): BOOLEAN
+		do
+			Result := c = ' '
+		end
 
 	format_string_check: RX_PCRE_REGULAR_EXPRESSION
 			-- Regular expressions to validate format strings

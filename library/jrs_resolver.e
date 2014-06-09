@@ -15,7 +15,7 @@ class
 	JRS_RESOLVER
 
 
-inherit {NONE}
+inherit
 
 	XM_SHARED_CATALOG_MANAGER
 

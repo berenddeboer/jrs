@@ -20,9 +20,6 @@ feature -- Access
 	field_separator: CHARACTER
 		do
 			Result := internal_field_separator.item
-			if Result = '%U' then
-				Result := ','
-			end
 		end
 
 
@@ -34,18 +31,19 @@ feature -- Change
 		do
 			internal_field_separator.set_item (c)
 		ensure
-			field_separator_set: field_separator.item = c
+			field_separator_set: field_separator = c
 		end
 
 
 feature {NONE} -- Implementation
 
-	internal_field_separator: CHARACTER_REF
-		once ("process")
+	internal_field_separator: attached CHARACTER_REF
+			-- WARNING: once does not work (anymore?)
+		once
 			create Result
+			Result.set_item (',')
 		ensure
 			not_void: Result /= Void
 		end
-
 
 end

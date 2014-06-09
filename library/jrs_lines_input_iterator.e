@@ -2,7 +2,7 @@ note
 
 	description:
 
-		"Given some input. allow iterating over lines"
+		"Given some input, allow iterating over lines"
 
 	library: "John Resig Shell library"
 	author: "Berend de Boer <berend@pobox.com>"
