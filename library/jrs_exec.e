@@ -22,13 +22,16 @@ inherit
 
 feature -- Run things
 
-	exec (a_shell_command: STRING): JRS_LINES_OUTPUT_ITERATOR
-			-- Run command, return stdout as lines.
+	exec (a_command: STRING): JRS_LINES_OUTPUT_ITERATOR
+			-- Run a single command, return stdout as lines.
+			-- Do not use shell operators like '|', see `shell' for that.
+		require
+			command_not_empty: a_command /= Void and then not a_command.is_empty
 		local
 			p: POSIX_EXEC_PROCESS
 			input_iterator: JRS_LINES_INPUT_ITERATOR
 		do
-			create p.make_from_command_line (a_shell_command)
+			create p.make_from_command_line (a_command)
 			p.set_capture_output (True)
 			p.execute
 			create input_iterator.make_from_stream (p.stdout)
@@ -37,7 +40,26 @@ feature -- Run things
 			not_void: Result /= Void
 		end
 
+	shell (a_shell_command: STRING): JRS_LINES_OUTPUT_ITERATOR
+			-- Run a shell command -line using /bin/sh, returning stdout as lines.
+		require
+			shell_command_not_empty: a_shell_command /= Void and then not a_shell_command.is_empty
+		local
+			p: POSIX_EXEC_PROCESS
+			input_iterator: JRS_LINES_INPUT_ITERATOR
+		do
+			create p.make_capture_io (once "/bin/sh", <<once "-s">>)
+			p.execute
+			p.fd_stdin.put_line (a_shell_command)
+			p.fd_stdin.close
+			create input_iterator.make_from_stream (p.stdout)
+			create Result.make (input_iterator)
+		ensure
+			not_void: Result /= Void
+		end
+
 	run (a_shell_command: STRING)
+			-- Run a command. Exception when exit code indicates a failure.
 		require
 			shell_command_not_empty: a_shell_command /= Void and then not a_shell_command.is_empty
 		do
@@ -49,14 +71,15 @@ feature -- Run things
 		end
 
 	try_run (a_shell_command: STRING)
+			-- Run a command. Store the exit code in `last_exit_code'.
 		require
 			shell_command_not_empty: a_shell_command /= Void and then not a_shell_command.is_empty
 		local
-			shell: STDC_SHELL_COMMAND
+			my_shell: STDC_SHELL_COMMAND
 		do
-			create shell.make (a_shell_command)
-			shell.execute
-			last_exit_code := shell.exit_code
+			create my_shell.make (a_shell_command)
+			my_shell.execute
+			last_exit_code := my_shell.exit_code
 		end
 
 	last_exit_code: INTEGER

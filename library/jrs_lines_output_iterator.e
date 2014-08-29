@@ -42,6 +42,24 @@ feature -- Access
 	input_iterator: JRS_LINES_INPUT_ITERATOR
 			-- Input to be transformed/iterated against.
 
+	first_line: like input_iterator.item_for_iteration
+			-- First line
+		do
+			input_iterator.start
+			line_number := 1
+			Result := last_line
+		ensure
+			not_void: Result /= Void
+		end
+
+	to_integer_64: INTEGER_64
+			-- Integer in `first_line'
+		require
+			is_integer: first_line.out.is_integer_64
+		do
+			Result := first_line.out.to_integer_64
+		end
+
 
 feature -- Access while iterating in `each'
 
