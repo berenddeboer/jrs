@@ -74,6 +74,9 @@ feature -- Access
 		end
 
 	fields_anchor: DS_HASH_TABLE [STRING, READABLE_STRING_GENERAL]
+		once
+			create Result.make (0)
+		end
 
 
 feature -- status
