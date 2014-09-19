@@ -178,6 +178,7 @@ feature -- Commands
 feature {NONE} -- Implementation
 
 	fs: SUS_FILE_SYSTEM
+			-- Current system file system
 		once
 			create Result
 		ensure
