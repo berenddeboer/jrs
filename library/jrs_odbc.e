@@ -2,7 +2,7 @@ note
 
 	description:
 
-		"ODBC interface"
+		"ODBC interface."
 
 	library: "John Resig Shell library"
 	author: "Berend de Boer <berend@pobox.com>"
@@ -83,6 +83,10 @@ feature -- Status
 
 	query (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE; a_row_format: TUPLE []): JRS_ROWS_ITERATOR [like a_row_format]
 			-- Rows returned by executing `an_sql'
+			-- `an_sql' is a query like: "select * from table where id = $i"
+			-- or: "select * from table where name = '$s'".
+			-- All parameters in `a_parameters' should appear in the
+			-- order given in the query and be of the appropriate type.
 		require
 			data_source_not_empty: a_data_source /= Void and then not a_data_source.is_empty
 			not_empty: an_sql /= Void and then not an_sql.is_empty
