@@ -28,14 +28,16 @@ feature -- Run things
 		require
 			command_not_empty: a_command /= Void and then not a_command.is_empty
 		local
-			p: POSIX_EXEC_PROCESS
+			p: EPX_EXEC_PROCESS
 			input_iterator: JRS_LINES_INPUT_ITERATOR
 		do
 			create p.make_from_command_line (a_command)
 			p.set_capture_output (True)
 			p.execute
-			create input_iterator.make_from_stream (p.stdout)
+			create input_iterator.make_from_stream (p.fd_stdout)
 			create Result.make (input_iterator)
+			p.wait_for (False)
+			-- TODO: we need to call `wait_for' in our iterator as well, and close properly
 		ensure
 			not_void: Result /= Void
 		end
