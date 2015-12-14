@@ -33,7 +33,7 @@ feature -- Status
 	is_regular_file (a_file_name: READABLE_STRING_GENERAL): BOOLEAN
 			-- Uses real uid, not effective, so take care when running setuid.
 		do
-			Result := fs.is_regular_file (a_file_name.out)
+			Result := a_file_name /= Void and then fs.is_regular_file (a_file_name.out)
 		end
 
 	is_valid_directory_name (a_directory: STRING): BOOLEAN
