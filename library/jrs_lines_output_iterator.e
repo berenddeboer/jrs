@@ -105,7 +105,7 @@ feature -- Commands
 		end
 
 	include (an_rx: READABLE_STRING_GENERAL): JRS_LINES_OUTPUT_ITERATOR
-			-- Lines matching regular expression `an_rx'
+			-- All lines matching regular expression `an_rx'
 		require
 			valid_regular_expression: is_valid_regex (an_rx)
 		do
@@ -114,18 +114,19 @@ feature -- Commands
 			rx.compile (an_rx.out)
 			input_iterator.each (agent (a_line: READABLE_STRING_GENERAL): BOOLEAN
 				do
-					if not a_line.is_empty then
-						rx.match (a_line.out)
-						if rx.has_matched then
-							lines.put_last (a_line.twin)
-						end
+					debug ("jrs")
+						print ("include matching: " + a_line + "%N")
+					end
+					rx.match (a_line.out)
+					if rx.has_matched then
+						lines.put_last (a_line.twin)
 					end
 				end)
 			create Result.make (create {JRS_LINES_INPUT_ITERATOR}.make_from_linear (lines))
 		end
 
 	exclude (an_rx: READABLE_STRING_GENERAL): JRS_LINES_OUTPUT_ITERATOR
-			-- Lines not matching regular expression `an_rx'
+			-- All lines not matching regular expression `an_rx'
 		require
 			valid_regular_expression: is_valid_regex (an_rx)
 		do
@@ -134,11 +135,9 @@ feature -- Commands
 			rx.compile (an_rx.out)
 			input_iterator.each (agent (a_line: READABLE_STRING_GENERAL): BOOLEAN
 				do
-					if not a_line.is_empty then
-						rx.match (a_line.out)
-						if not rx.has_matched then
-							lines.put_last (a_line.twin)
-						end
+					rx.match (a_line.out)
+					if not rx.has_matched then
+						lines.put_last (a_line.twin)
 					end
 				end)
 			create Result.make (create {JRS_LINES_INPUT_ITERATOR}.make_from_linear (lines))
