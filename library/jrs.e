@@ -27,7 +27,5 @@ inherit
 
 	JRS_RESOLVER
 
-	JRS_LINES
-
 
 end

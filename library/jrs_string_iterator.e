@@ -15,7 +15,7 @@ class
 	JRS_STRING_ITERATOR
 
 
-obsolete "2012-07-25: Please port to JRS_LINES_OUTPUT_ITERATOR."
+obsolete "2012-07-25: Please port to JRS_LINES_ITERATOR."
 
 create
 

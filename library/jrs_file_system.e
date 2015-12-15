@@ -49,7 +49,7 @@ feature -- Status
 		require
 			set_not_void: a_set /= Void
 		do
-			Result := not ls (a_set).set.is_empty
+			Result := not ls (a_set).linear.is_empty
 		end
 
 feature -- Iteration
@@ -72,7 +72,7 @@ feature -- Iteration
 			not_void: Result /= Void
 		end
 
-	ls (a_set: JRS_STRING_SET): JRS_STRING_ITERATOR
+	ls (a_set: JRS_STRING_SET): JRS_LINES_LINEAR_ITERATOR
 			-- Non-recursive directory listing. Only files matcing `re'
 			-- will be returned.
 			-- So things like "dir/.*/.*\.log" won't work (yet)
@@ -160,7 +160,7 @@ feature -- Iteration
 			debug ("jrs")
 				print ("FOUND " + found_files.count.out + " FILES%N")
 			end
-			create Result.make (found_files)
+			create {JRS_LINES_LINEAR_ITERATOR} Result.make (found_files)
 		end
 
 

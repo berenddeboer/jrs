@@ -17,7 +17,7 @@ deferred class
 
 feature -- Basic
 
-	each (f: FUNCTION [ANY, TUPLE[G], BOOLEAN])
+	each (f: FUNCTION [ANY, TUPLE[JRS_ITERATOR [G]], BOOLEAN])
 		require
 			f_not_void: f /= Void
 		local
@@ -29,7 +29,7 @@ feature -- Basic
 				stop or else
 				after
 			loop
-				f.call ([last_item])
+				f.call ([Current])
 				stop := f.last_result
 				forth
 			end
@@ -45,7 +45,10 @@ feature -- Status
 
 feature -- Access
 
-	last_item: G
+	last_item: detachable G
+			-- Current item if applicable
+		require
+			not_after: not after
 		deferred
 		end
 
@@ -56,8 +59,6 @@ feature -- Movement
 		require
 			not_after: not after
 		deferred
-		ensure
-			last_item_not_void: not after implies last_item /= Void
 		end
 
 	forth

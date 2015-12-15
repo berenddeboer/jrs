@@ -14,6 +14,7 @@ class
 
 	JRS_LINES_OUTPUT_ITERATOR
 
+obsolete "Use JRS_LINES_ITERATOR instead."
 
 inherit
 
@@ -98,12 +99,6 @@ feature -- Commands
 			end
 		end
 
-	as_files: JRS_FILES_OUTPUT_ITERATOR
-			-- String as set of text files
-		do
-			create Result.make (input_iterator)
-		end
-
 	include (an_rx: READABLE_STRING_GENERAL): JRS_LINES_OUTPUT_ITERATOR
 			-- All lines matching regular expression `an_rx'
 		require
@@ -143,89 +138,15 @@ feature -- Commands
 			create Result.make (create {JRS_LINES_INPUT_ITERATOR}.make_from_linear (lines))
 		end
 
-	tuple (a_tuple_type: TUPLE): JRS_TUPLE_OUTPUT_ITERATOR
-			-- Tuple iterator matching tuple `a_tuple_type' for every
-			-- line, using `field_separator' to split the line into
-			-- component
-		require
-			a_tuple_type_not_void: a_tuple_type /= Void
-			field_separator_set: field_separator /= '%U'
-		do
-			create tuples.make
-			tuple_type := a_tuple_type
-			-- TODO: should actually create an input iterator, and pass that,
-			-- not pre-iterate at this point.
-			input_iterator.each (agent tuple_iterator)
-			create Result.make (tuples)
-		ensure
-			not_void: Result /= Void
-		end
-
 
 feature -- Anchors
 
 	iterator_anchor: FUNCTION [ANY, TUPLE[JRS_LINES_OUTPUT_ITERATOR], BOOLEAN]
 
 
-feature {NONE} -- Internal agents
-
-	tuple_iterator (a_line: READABLE_STRING_GENERAL): BOOLEAN
-			-- Used by `tuple'.
-		local
-			list: like split
-			i: INTEGER
-			t: like tuple_type
-			s: STRING
-		do
-			list := split (a_line, field_separator)
-			t := tuple_type.twin
-			from
-				i := tuple_type.lower
-				list.start
-			until
-				i > t.upper or else
-				list.after
-			loop
-				if t.is_boolean_item (i) then
-					s := list.item_for_iteration.out
-					if s.is_boolean then
-						t.put_boolean (s.to_boolean, i)
-					elseif s.is_integer then
-						t.put_boolean (s.to_integer /= 0, i)
-					else
-						t.put_boolean (False, i)
-					end
-				elseif t.is_integer_item (i) then
-					s := list.item_for_iteration.out
-					if s.is_integer then
-						t.put_integer (s.to_integer, i)
-					else
-						t.put_integer (0, i)
-					end
-				elseif t.is_integer_64_item (i) then
-					s := list.item_for_iteration.out
-					if s.is_integer_64 then
-						t.put_integer_64 (s.to_integer_64, i)
-					else
-						t.put_integer_64 (0, i)
-					end
-				elseif t.is_reference_item (i) and then t.valid_type_for_index (list.item_for_iteration, i) then
-					t.put (list.item_for_iteration, i)
-				end
-				i := i + 1
-				list.forth
-			end
-			tuples.put_last (t)
-		end
-
-
 feature {NONE} -- Implementation
 
 	lines: DS_LINKED_LIST [READABLE_STRING_GENERAL]
-
-	tuples: DS_LINKED_LIST [TUPLE]
-
-	tuple_type: TUPLE
 
 	rx: RX_PCRE_REGULAR_EXPRESSION
 
