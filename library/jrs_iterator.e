@@ -17,7 +17,7 @@ deferred class
 
 feature -- Basic
 
-	each (f: FUNCTION [ANY, TUPLE[JRS_ITERATOR [G]], BOOLEAN])
+	each (f: FUNCTION [TUPLE[JRS_ITERATOR [G]], BOOLEAN])
 		require
 			f_not_void: f /= Void
 		local

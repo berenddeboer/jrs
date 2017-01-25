@@ -17,6 +17,8 @@ class
 
 inherit
 
+	ANY
+
 	KL_IMPORTED_ANY_ROUTINES
 		export
 			{NONE} all

@@ -66,7 +66,7 @@ feature -- Converting iterators
 			a_tuple_type_not_void: a_tuple_type /= Void
 			field_separator_set: a_field_separator /= '%U'
 		do
-			create {JRS_TUPLE_ITERATOR} Result.make (Current, a_field_separator)
+			create {JRS_TUPLE_ITERATOR} Result.make (Current, a_tuple_type, a_field_separator)
 		ensure
 			not_void: Result /= Void
 		end

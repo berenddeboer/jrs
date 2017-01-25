@@ -109,7 +109,7 @@ feature -- Movement
 
 feature -- Anchors
 
-	iterator_anchor: FUNCTION [ANY, TUPLE[READABLE_STRING_GENERAL], BOOLEAN]
+	iterator_anchor: FUNCTION [TUPLE[READABLE_STRING_GENERAL], BOOLEAN]
 
 
 feature {NONE} -- Implementation

@@ -141,7 +141,7 @@ feature -- Commands
 
 feature -- Anchors
 
-	iterator_anchor: FUNCTION [ANY, TUPLE[JRS_LINES_OUTPUT_ITERATOR], BOOLEAN]
+	iterator_anchor: FUNCTION [TUPLE[JRS_LINES_OUTPUT_ITERATOR], BOOLEAN]
 
 
 feature {NONE} -- Implementation
