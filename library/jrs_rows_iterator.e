@@ -43,7 +43,7 @@ feature -- Access
 
 feature -- Command
 
-	rows, each (f: FUNCTION [ANY, TUPLE[], BOOLEAN])
+	rows, each (f: FUNCTION [TUPLE[], BOOLEAN])
 		local
 			stop: BOOLEAN
 		do
