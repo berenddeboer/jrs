@@ -35,7 +35,7 @@ feature {NONE} -- Initialisation
 	make (an_iterator: like wrapped_iterator; a_tuple_type: like tuple_type; a_field_separator: like field_separator)
 		require
 			a_tuple_type_not_void: a_tuple_type /= Void
-			field_separator_set: field_separator /= '%U'
+			field_separator_set: a_field_separator /= '%U'
 		do
 			make_transforming_iterator (an_iterator)
 			tuple_type := a_tuple_type
