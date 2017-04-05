@@ -403,10 +403,17 @@ feature -- Regular expressions
 			-- inserting into dynamically created SQL
 		require
 			s_not_void: s /= Void
+		local
+			r1, r2, r3, r4: UC_STRING
 		do
 			Result := s.twin
-			Result.replace_substring_all (once "'", once "''")
-			Result.replace_substring_all (once "\", once "\\")
+			-- Written weirdly because of Gobo CATCALL complaints which I don't know how to resolve any better
+			create r1.make_from_string (once "'")
+			create r2.make_from_string (once "''")
+			Result.replace_substring_all (r1, r2)
+			create r3.make_from_string (once "\")
+			create r4.make_from_string (once "\\")
+			Result.replace_substring_all (r3, r4)
 		end
 
 	quote_format_strings (s: attached STRING): STRING
