@@ -12,12 +12,12 @@ note
 
 class
 
-	JRS_TUPLE_ITERATOR
+	JRS_TUPLE_ITERATOR [G -> TUPLE]
 
 
 inherit
 
-	JRS_TRANSFORMING_ITERATOR [READABLE_STRING_GENERAL, TUPLE]
+	JRS_TRANSFORMING_ITERATOR [READABLE_STRING_GENERAL, G]
 		rename
 			make as make_transforming_iterator
 		end
@@ -32,7 +32,7 @@ create
 
 feature {NONE} -- Initialisation
 
-	make (an_iterator: like wrapped_iterator; a_tuple_type: like tuple_type; a_field_separator: like field_separator)
+	make (an_iterator: like wrapped_iterator; a_tuple_type: G; a_field_separator: like field_separator)
 		require
 			a_tuple_type_not_void: a_tuple_type /= Void
 			field_separator_set: a_field_separator /= '%U'
@@ -45,19 +45,22 @@ feature {NONE} -- Initialisation
 
 feature -- Access
 
-	last_item: TUPLE
+	last_item: G
 		do
 			Result := new_tuple (wrapped_iterator.last_item)
 		end
 
-	tuple_type: TUPLE
+	tuple_type: G
+			-- We cannot create generic tuples, they must be based on a
+			-- specific tuple, so instead of creating one, we clone an
+			-- actual one.
 
 	field_separator: CHARACTER
 
 
 feature {NONE} -- Implementation
 
-	new_tuple (a_line: READABLE_STRING_GENERAL): TUPLE
+	new_tuple (a_line: READABLE_STRING_GENERAL): G
 			-- Used by `tuple'.
 		local
 			list: like split
@@ -68,7 +71,7 @@ feature {NONE} -- Implementation
 			list := split (a_line, field_separator)
 			t := tuple_type.twin
 			from
-				i := tuple_type.lower
+				i := t.lower
 				list.start
 			until
 				i > t.upper or else

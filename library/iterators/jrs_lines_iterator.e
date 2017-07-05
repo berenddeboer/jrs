@@ -58,7 +58,7 @@ feature -- Converting iterators
 			not_void: Result /= Void
 		end
 
-	as_tuples (a_tuple_type: TUPLE; a_field_separator: CHARACTER): JRS_TUPLE_ITERATOR
+	as_tuples (a_tuple_type: TUPLE; a_field_separator: CHARACTER): JRS_TUPLE_ITERATOR [like a_tuple_type]
 			-- Tuple iterator matching tuple `a_tuple_type' for every
 			-- line, using `field_separator' to split the line into
 			-- component
@@ -66,7 +66,7 @@ feature -- Converting iterators
 			a_tuple_type_not_void: a_tuple_type /= Void
 			field_separator_set: a_field_separator /= '%U'
 		do
-			create {JRS_TUPLE_ITERATOR} Result.make (Current, a_tuple_type, a_field_separator)
+			create {JRS_TUPLE_ITERATOR [like a_tuple_type]} Result.make (Current, a_tuple_type, a_field_separator)
 		ensure
 			not_void: Result /= Void
 		end
