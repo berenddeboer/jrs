@@ -14,7 +14,7 @@ class
 
 	JRS_LINES_OUTPUT_ITERATOR
 
-obsolete "Use JRS_LINES_ITERATOR instead."
+obsolete "Use JRS_LINES_ITERATOR/JRS_LINES_STREAM_ITERATOR instead."
 
 inherit
 

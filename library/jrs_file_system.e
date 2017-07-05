@@ -54,20 +54,18 @@ feature -- Status
 
 feature -- Iteration
 
-	if_file (a_name: READABLE_STRING_GENERAL): JRS_LINES_OUTPUT_ITERATOR
+	if_file (a_name: READABLE_STRING_GENERAL): JRS_LINES_ITERATOR
 			-- Include `a_name' in set if it is an existing file.
 		require
 			name_not_empty: a_name /= Void and then not a_name.is_empty
 		local
-			input: JRS_LINES_INPUT_ITERATOR
 			set: DS_LINKED_LIST [READABLE_STRING_GENERAL]
 		do
 			create set.make
 			if is_regular_file (a_name) then
 				set.put_last (a_name)
 			end
-			create input.make_from_linear (set)
-			create Result.make (input)
+			create {JRS_LINES_LINEAR_ITERATOR} Result.make (set)
 		ensure
 			not_void: Result /= Void
 		end
