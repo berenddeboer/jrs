@@ -45,9 +45,11 @@ feature {NONE} -- Initialisation
 
 feature -- Access
 
-	last_item: G
+	last_item: detachable G
 		do
-			Result := new_tuple (wrapped_iterator.last_item)
+			if attached wrapped_iterator.last_item as li then
+				Result := new_tuple (li)
+			end
 		end
 
 	tuple_type: G

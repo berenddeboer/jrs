@@ -2,7 +2,7 @@ note
 
 	description:
 
-		"Base class for an interator over lines (strings."
+		"Base class for an interator over lines (strings)."
 
 	library: "John Resig Shell library"
 	author: "Berend de Boer <berend@pobox.com>"

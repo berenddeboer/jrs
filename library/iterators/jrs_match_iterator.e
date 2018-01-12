@@ -84,10 +84,12 @@ feature {NONE} -- Implementation
 			until
 				after or else found
 			loop
-				rx.match (last_item.out)
-				found := rx.has_matched = should_match
-				if not found then
-					wrapped_iterator.forth
+				if attached last_item as li then
+					rx.match (li.out)
+					found := rx.has_matched = should_match
+					if not found then
+						wrapped_iterator.forth
+					end
 				end
 			end
 		end

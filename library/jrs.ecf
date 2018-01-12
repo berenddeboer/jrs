@@ -5,7 +5,7 @@
 		<option warning="true" full_class_checking="true" syntax="standard">
     </option>
 		<capability>
-			<void_safety support="none" use="none"/>
+			<void_safety support="transitional" use="none"/>
 			<concurrency support="none" use="none"/>
 		</capability>
 		<library name="base" location="$ISE_LIBRARY/library/base/base.ecf"/>
@@ -18,7 +18,6 @@
 		<library name="gobo_string" location="$ISE_LIBRARY\library\gobo\gobo_string.ecf"/>
 		<library name="gobo_structure" location="$ISE_LIBRARY\library\gobo\gobo_structure.ecf"/>
 		<library name="gobo_time" location="$ISE_LIBRARY\library\gobo\gobo_time.ecf"/>
-		<library name="gobo_tools" location="$ISE_LIBRARY\library\gobo\gobo_tools.ecf"/>
 		<library name="gobo_utility" location="$ISE_LIBRARY\library\gobo\gobo_utility.ecf"/>
 		<library name="gobo_xml" location="$ISE_LIBRARY\library\gobo\gobo_xml.ecf"/>
 		<library name="eposix" location="${EPOSIX}/eposix.ecf"/>

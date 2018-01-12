@@ -18,14 +18,31 @@ class
 inherit
 
 	SUS_SYSTEM
+		rename
+			echo as terminal_echo
+		end
+
+
+inherit {NONE}
 
 	JRS_STRING_ROUTINES
 
 	JRS_DATE_TIME_ROUTINES
 
 	JRS_EXEC
+		rename
+			echo as terminal_echo
+		end
 
 	JRS_RESOLVER
+
+
+feature -- Utilities
+
+	echo (s: STRING): JRS_LINES_ITERATOR
+		do
+			create {JRS_STRING_ITERATOR} Result.make_from_string (s)
+		end
 
 
 end

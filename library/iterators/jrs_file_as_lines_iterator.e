@@ -33,9 +33,11 @@ create
 
 feature -- Access
 
-	last_item: READABLE_STRING_GENERAL
+	last_item: detachable READABLE_STRING_GENERAL
 		do
-			Result := wrapped_iterator.last_item.last_string
+			if attached wrapped_iterator.last_item as wrapped_last_item then
+				Result := wrapped_last_item.last_string
+			end
 		end
 
 
@@ -57,14 +59,14 @@ feature {NONE} -- Implementation
 
 	read_line_from_file
 		do
-			if not wrapped_iterator.after then
-				if not wrapped_iterator.last_item.end_of_input then
-					wrapped_iterator.last_item.read_line
+			if not wrapped_iterator.after and then attached wrapped_iterator.last_item as wrapped_last_item then
+				if not wrapped_last_item.end_of_input then
+					wrapped_last_item.read_line
 				end
-				if wrapped_iterator.last_item.end_of_input then
+				if wrapped_last_item.end_of_input then
 					wrapped_iterator.forth
 					if not wrapped_iterator.after then
-						wrapped_iterator.last_item.read_line
+						wrapped_last_item.read_line
 					end
 				end
 			end

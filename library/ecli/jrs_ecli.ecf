@@ -35,7 +35,7 @@
     -->
 		<library name="ecli" location="${ECLI}/ecli.ecf"/>
 		<library name="ejax" location="${EJAX}/library/library-ecli.ecf"/>
-		<library name="jrs" location="${JRS}/library/library.ecf"/>
+		<library name="jrs" location="${JRS}/library/jrs.ecf"/>
 
 		<cluster name="jrs_ecli" location="." recursive="true">
     </cluster>

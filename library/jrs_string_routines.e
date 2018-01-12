@@ -179,8 +179,6 @@ feature -- String formatting
 			parameters_valid: valid_format (s, a_parameters)
 		do
 			Result := do_format (s, a_parameters, false)
-		ensure
-			only_void_if: (s = Void) = (Result = Void)
 		end
 
 	format_sql (s: STRING; a_parameters: TUPLE): STRING
@@ -202,6 +200,7 @@ feature -- String formatting
 			-- escaped in an attempt to make them safe to be used for
 			-- dynamically generated sql.
 		require
+			s_not_void: attached s
 			parameters_valid: valid_format (s, a_parameters)
 		local
 			-- convert_to_utf8: BOOLEAN
@@ -209,12 +208,11 @@ feature -- String formatting
 			parameter: INTEGER
 			my_ss: STRING
 			my_b: BOOLEAN
-			a: detachable ANY
 			c: INTEGER
 		do
-			if a_parameters = Void or else a_parameters.count = 0 then
+			if not attached a_parameters as my_parameters or else my_parameters.count = 0 then
 				Result := s
-			elseif s /= Void then
+			else
 				-- I used to have this, but not sure this is useful or
 				-- safe as we have to assume utf8 in STRING. That's
 				-- perhaps limiting. Much better to have charset=utf8 in
@@ -236,7 +234,7 @@ feature -- String formatting
 						inspect Result.item (i + 1)
 						when 's', 't' then
 							c := Result.count
-							if attached {STRING} a_parameters.reference_item (parameter) as my_s then
+							if attached {STRING} my_parameters.reference_item (parameter) as my_s then
 								if an_escape_strings and then Result.item (i + 1) /= 't' then
 									my_ss := aliased_quote_sql_string (my_s)
 								else
@@ -244,11 +242,10 @@ feature -- String formatting
 								end
 								Result.replace_substring (my_ss, i, i + 1)
 							else
-								a := a_parameters.reference_item (parameter)
-								if a = Void then
-									Result.replace_substring (once "", i, i + 1)
+								if attached my_parameters.reference_item (parameter) as a then
+									Result.replace_substring (a.out, i, i + 1)
 								else
-									Result.replace_substring (a_parameters.reference_item (parameter).out, i, i + 1)
+									Result.replace_substring (once "", i, i + 1)
 								end
 							end
 							i := i + (Result.count - c + 1)
@@ -288,8 +285,6 @@ feature -- String formatting
 				-- 	Result := STRING_.as_string (Result)
 				-- end
 			end
-		ensure
-			only_void_if: (s = Void) = (Result = Void)
 		end
 
 
@@ -303,6 +298,7 @@ feature -- String manipulation
 			-- not: if it is white space, consecutive occurences of `on'
 			-- are counted as one, and beginning and ending white space
 			-- is removed, before splitting.
+			-- Regardless, every item will be trimmed.
 			-- if `s' is Void an empty array will be returned
 		local
 			p, start: INTEGER
@@ -325,7 +321,7 @@ feature -- String manipulation
 					p = 0
 				loop
 					tmp_string := t.substring (start, p-1)
-					Result.put_last (tmp_string)
+					Result.put_last (trim (tmp_string))
 					start := p + 1
 					if white_space then
 						from
@@ -343,7 +339,7 @@ feature -- String manipulation
 				-- Last element or entire string
 				if start <= t.count then
 					tmp_string := t.substring (start, s.count)
-					Result.put_last (tmp_string)
+					Result.put_last (trim (tmp_string))
 				end
 			end
 		ensure
@@ -353,14 +349,12 @@ feature -- String manipulation
 
 	trim (s: READABLE_STRING_GENERAL): STRING
 			-- `s' with leading and trailing white space removed
+		require
+			s_not_void: s /= Void
 		do
-			if s /= Void then
-				create Result.make_from_string (s.as_string_8)
-				Result.left_adjust
-				Result.right_adjust
-			end
-		ensure
-			void_if_void: (s = Void) = (Result = Void)
+			create Result.make_from_string (s.as_string_8)
+			Result.left_adjust
+			Result.right_adjust
 		end
 
 

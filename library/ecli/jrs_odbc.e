@@ -18,6 +18,9 @@ class
 inherit
 
 	JRS_BASE
+		rename
+			echo as terminal_echo
+		end
 
 
 inherit {NONE}

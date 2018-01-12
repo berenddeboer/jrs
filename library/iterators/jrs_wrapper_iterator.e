@@ -10,7 +10,7 @@ note
 	license: "MIT License (see LICENSE)"
 
 
-class
+deferred class
 
 	JRS_WRAPPER_ITERATOR
 
@@ -22,7 +22,7 @@ inherit
 
 feature -- Access
 
-	last_item: READABLE_STRING_GENERAL
+	last_item: detachable READABLE_STRING_GENERAL
 		do
 			Result := wrapped_iterator.last_item
 		end

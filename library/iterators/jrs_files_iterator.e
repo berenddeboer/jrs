@@ -31,7 +31,7 @@ create
 
 feature -- Access
 
-	last_item: STDC_TEXT_FILE
+	last_item: detachable STDC_TEXT_FILE
 		do
 			Result := internal_last_item
 		end
@@ -78,7 +78,9 @@ feature {NONE} -- Implementation
 					after or else found
 				loop
 					attempt_open_file
-					found := internal_last_item.is_open_read
+					if attached internal_last_item as ili then
+						found := ili.is_open_read
+					end
 					if not found then
 						wrapped_iterator.forth
 					end
@@ -91,13 +93,18 @@ feature {NONE} -- Implementation
 	attempt_open_file
 		require
 			not_after: not wrapped_iterator.after
+		local
+			ili: like internal_last_item
 		do
 			close_internal_last_item
-			create internal_last_item.make (wrapped_iterator.last_item.out)
-			internal_last_item.set_continue_on_error
-			internal_last_item.open_read (wrapped_iterator.last_item.out)
+			if attached wrapped_iterator.last_item as li then
+				create ili.make (li.out)
+				internal_last_item := ili
+				ili.set_continue_on_error
+				ili.open_read (li.out)
+			end
 		ensure
-			internal_last_item_not_void: internal_last_item /= Void
+			internal_last_item_not_void: attached internal_last_item
 		end
 
 	close_internal_last_item
@@ -110,6 +117,6 @@ feature {NONE} -- Implementation
 
 invariant
 
-	all_files_closed_after_reading: after implies internal_last_item = Void or else not internal_last_item.is_open
+	all_files_closed_after_reading: after implies not attached internal_last_item as li or else not li.is_open
 
 end

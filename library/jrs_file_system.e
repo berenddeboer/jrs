@@ -94,63 +94,66 @@ feature -- Iteration
 				create path.make_from_raw_string (a_set.item_for_iteration.out)
 				path.parse (Void)
 
-				debug ("jrs")
-					print ("MATCHING " + path.basename + "%N")
-				end
-				rx_rx.match (path.basename)
-				if rx_rx.has_matched then
-					-- If path is a regular expression, we need to iterate
-					-- the directory
+					check attached path.basename end
+				if attached path.basename as basename then
 					debug ("jrs")
-						print ("PATH IS A REGULAR EXPRESSION%N")
+						print ("MATCHING " + basename + "%N")
 					end
-					rx.compile (path.basename)
-					if rx.is_compiled then
-						if path.directory.is_empty then
-							dir_path := once "."
-							dir_prefix := once ""
-						else
-							dir_path := path.directory
-							dir_prefix := path.directory + once "/"
-						end
+					rx_rx.match (basename)
+					if rx_rx.has_matched then
+						-- If path is a regular expression, we need to iterate
+						-- the directory
 						debug ("jrs")
-							print ("PATH EXPRESSION COMPILES, BROWSING '" + dir_path + "'%N")
+							print ("PATH IS A REGULAR EXPRESSION%N")
 						end
-						-- TODO: handle case where browse fails?
-						-- Now we simply ignore them.
-						dir := fs.browse_directory (dir_path)
-						dir.set_continue_on_error
-						dir.errno.clear_all
-						from
-							dir.start
-						until
-							not dir.errno.is_ok or else
-							dir.after
-						loop
-							-- Never present . and .. entries
-							if
-								dir.item.count > 2 or else
-								(dir.item.count = 1 and dir.item.item (1) /= '.') or else
-								(dir.item.count = 2 and not equal (dir.item, once "..")) then
-								debug ("jrs")
-									print ("  FOUND " + dir.item + "%N")
-								end
-								rx.match (dir.item)
-								if rx.has_matched then
-									found_files.force (dir_prefix + dir.item)
-								end
-								rx.wipe_out
+						rx.compile (basename)
+						if rx.is_compiled then
+							if attached path.directory as d and then not d.is_empty then
+								dir_path := d
+								dir_prefix := d + once "/"
+							else
+								dir_path := once "."
+								dir_prefix := once ""
 							end
-							dir.forth
+							debug ("jrs")
+								print ("PATH EXPRESSION COMPILES, BROWSING '" + dir_path + "'%N")
+							end
+							-- TODO: handle case where browse fails?
+							-- Now we simply ignore them.
+							dir := fs.browse_directory (dir_path)
+							dir.set_continue_on_error
+							dir.errno.clear_all
+							from
+								dir.start
+							until
+								not dir.errno.is_ok or else
+								dir.after
+							loop
+								-- Never present . and .. entries
+								if
+									dir.item.count > 2 or else
+									(dir.item.count = 1 and dir.item.item (1) /= '.') or else
+									(dir.item.count = 2 and not equal (dir.item, once "..")) then
+									debug ("jrs")
+										print ("  FOUND " + dir.item + "%N")
+									end
+									rx.match (dir.item)
+									if rx.has_matched then
+										found_files.force (dir_prefix + dir.item)
+									end
+									rx.wipe_out
+								end
+								dir.forth
+							end
+						else
+							-- Not a valid regular expression, treat as filename
+							found_files.force (unescape (a_set.item_for_iteration))
 						end
 					else
-						-- Not a valid regular expression, treat as filename
+						-- No need to check directory for this file, but we
+						-- should remove escape characters.
 						found_files.force (unescape (a_set.item_for_iteration))
 					end
-				else
-					-- No need to check directory for this file, but we
-					-- should remove escape characters.
-					found_files.force (unescape (a_set.item_for_iteration))
 				end
 				rx_rx.wipe_out
 				a_set.forth

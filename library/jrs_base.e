@@ -21,7 +21,5 @@ inherit
 
 	JRS_FILE_SYSTEM
 
-	JRS_STRING_ROUTINES
-
 
 end

@@ -33,9 +33,12 @@ feature -- Run things
 			create p.make_from_command_line (a_command)
 			p.set_capture_output (True)
 			p.execute
-			create {JRS_LINES_STREAM_ITERATOR} Result.make (p.fd_stdout)
+			if attached p.fd_stdout as fd then
+				create {JRS_LINES_STREAM_ITERATOR} Result.make (fd)
+			end
 			p.wait_for (False)
 			-- TODO: we need to call `wait_for' in our iterator as well, and close properly
+			check attached Result end
 		ensure
 			not_void: Result /= Void
 		end
@@ -49,9 +52,15 @@ feature -- Run things
 		do
 			create p.make_capture_io (once "/bin/sh", <<once "-s">>)
 			p.execute
-			p.fd_stdin.put_line (a_shell_command)
-			p.fd_stdin.close
-			create {JRS_LINES_STREAM_ITERATOR} Result.make (p.stdout)
+			if attached p.fd_stdin as my_fd_stdin then
+				my_fd_stdin.put_line (a_shell_command)
+				my_fd_stdin.close
+			end
+
+			if attached p.stdout as fd then
+				create {JRS_LINES_STREAM_ITERATOR} Result.make (fd)
+			end
+			check attached Result end
 		ensure
 			not_void: Result /= Void
 		end
