@@ -46,14 +46,14 @@ feature -- Resolver
 			a_url_not_empty: a_url /= Void and then not a_url.is_empty
 			a_url_valid: not Url_encoding.has_excluded_characters (a_url)
 		do
-			resolver.resolve_uri (a_url)
+			resolver.resolve (a_url)
 			Result := resolver.last_stream
 		end
 
 
 feature {NONE} -- Implementation
 
-	resolver: XM_SIMPLE_URI_EXTERNAL_RESOLVER
+	resolver: XM_URI_EXTERNAL_RESOLVER
 			-- Resolver for "file:", "http:" and "https:" scheme
 		require
 			valid_resolver: attached {XM_SIMPLE_URI_EXTERNAL_RESOLVER} shared_catalog_manager.bootstrap_resolver.uri_scheme_resolver
@@ -62,6 +62,7 @@ feature {NONE} -- Implementation
 			a_http: EPX_HTTP_URI_RESOLVER
 			a_https: EPX_HTTP_URI_RESOLVER
 		once
+			Result := shared_catalog_manager.bootstrap_resolver.uri_scheme_resolver
 			if attached {XM_SIMPLE_URI_EXTERNAL_RESOLVER} shared_catalog_manager.bootstrap_resolver.uri_scheme_resolver as r then
 				create a_file.make
 				r.register_scheme (a_file)
@@ -69,9 +70,7 @@ feature {NONE} -- Implementation
 				r.register_scheme (a_http)
 				create a_https.make (r.uris)
 				r.register_scheme (a_https)
-				Result := r
 			end
-				check attached Result end
 		ensure
 			result_not_void: Result /= Void
 		end

@@ -35,10 +35,11 @@ feature -- Run things
 			p.execute
 			if attached p.fd_stdout as fd then
 				create {JRS_LINES_STREAM_ITERATOR} Result.make (fd)
+			else
+				create {JRS_STRING_ITERATOR} Result.make_from_string ("")
 			end
 			p.wait_for (False)
 			-- TODO: we need to call `wait_for' in our iterator as well, and close properly
-			check attached Result end
 		ensure
 			not_void: Result /= Void
 		end
@@ -59,8 +60,9 @@ feature -- Run things
 
 			if attached p.stdout as fd then
 				create {JRS_LINES_STREAM_ITERATOR} Result.make (fd)
+			else
+				create {JRS_STRING_ITERATOR} Result.make_from_string ("")
 			end
-			check attached Result end
 		ensure
 			not_void: Result /= Void
 		end
