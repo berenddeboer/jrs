@@ -59,7 +59,7 @@ feature -- Command
 			end
 		end
 
-	set_row (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE; a_row: TUPLE [])
+	set_row (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE; a_row: TUPLE)
 			-- Execute query, and retrieve a single row if query returns
 			-- results, and put this in `a_row'.
 		require
@@ -84,7 +84,7 @@ feature -- Command
 
 feature -- Status
 
-	query (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE; a_row_format: TUPLE []): JRS_ROWS_ITERATOR [like a_row_format]
+	query (a_data_source: STRING; an_sql: STRING; a_parameters: detachable TUPLE; a_row_format: TUPLE): JRS_ROWS_ITERATOR [like a_row_format]
 			-- Rows returned by executing `an_sql'
 			-- `an_sql' is a query like: "select * from table where id = $i"
 			-- or: "select * from table where name = '$s'".
@@ -134,7 +134,7 @@ feature -- Status
 			create single_value
 			create temp_set.make (16)
 			temp_set.set_equality_tester (string_equality_tester)
-			query (a_data_source, an_sql, a_parameters, single_value).rows (agent (a_row: TUPLE [id: detachable STRING]; other: JRS_ROWS_ITERATOR_DATA): BOOLEAN
+			query (a_data_source, an_sql, a_parameters, single_value).rows (agent (a_row: TUPLE [id: STRING]; other: JRS_ROWS_ITERATOR_DATA): BOOLEAN
 				do
 				  temp_set.force (a_row.id)
 				end)
@@ -149,9 +149,6 @@ feature -- Status
 			login: ECLI_SIMPLE_LOGIN
 			my_session: ECLI_SESSION
 		do
-			if data_sources = Void then
-				create data_sources.make (2)
-			end
 			if not data_sources.has (a_data_source) then
 				create login.make (a_data_source, "", "")
 				create my_session.make_default
@@ -191,25 +188,26 @@ feature -- Cleanup
 	dispose
 			-- Close handle if owner.
 		do
-			if data_sources /= Void then
-				from
-					data_sources.start
-				until
-					data_sources.after
-				loop
-					if data_sources.item_for_iteration.is_connected then
-						data_sources.item_for_iteration.disconnect
-					end
-					data_sources.forth
+			from
+				data_sources.start
+			until
+				data_sources.after
+			loop
+				if data_sources.item_for_iteration.is_connected then
+					data_sources.item_for_iteration.disconnect
 				end
-				data_sources := Void
+				data_sources.forth
 			end
+			data_sources.wipe_out
 		end
 
 
 feature {NONE} -- Implementation
 
 	data_sources: DS_HASH_TABLE [ECLI_SESSION, STRING]
+		once
+			create Result.make (2)
+		end
 
 	temp_set: DS_HASH_SET [STRING]
 

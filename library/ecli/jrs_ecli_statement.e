@@ -24,7 +24,7 @@ inherit
 
 inherit {NONE}
 
-ECLI_TYPE_CONSTANTS
+	ECLI_TYPE_CONSTANTS
 		undefine
 			default_create
 		end
@@ -112,7 +112,8 @@ feature {NONE} -- Implementation
 		do
 			create h.make (result_columns_count)
 			results_tuple.put (h, results_tuple.lower)
-			create v.make_filled (Void, 1, result_columns_count)
+			create {ECLI_STRING} column.make_longvarchar (0)
+			create v.make_filled (column, 1, result_columns_count)
 			from
 				i := v.lower
 			until
@@ -147,8 +148,10 @@ feature {NONE} -- Implementation
 			column: ECLI_VALUE
 			i: INTEGER
 			v: ARRAY [ECLI_VALUE]
+			s: ECLI_STRING
 		do
-			create v.make_filled (Void, 1, result_columns_count)
+			create s.make_longvarchar (256)
+			create v.make_filled (s, 1, result_columns_count)
 			from
 				i := v.lower
 			until
