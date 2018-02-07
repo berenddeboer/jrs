@@ -54,7 +54,9 @@ feature -- Command
 		rescue
 			-- Print SQL in case something failed
 			if stmt /= Void and then not stmt.is_ok then
-				print ("SQL query failed: " + sql + "%N")
+				if attached sql as s then
+					print ("SQL query failed: " + s + "%N")
+				end
 				print ("Error message: " + stmt.diagnostic_message + "%N")
 			end
 		end
@@ -132,8 +134,7 @@ feature -- Status
 			single_value: TUPLE [id: detachable STRING]
 		do
 			create single_value
-			create temp_set.make (16)
-			temp_set.set_equality_tester (string_equality_tester)
+			temp_set.wipe_out
 			query (a_data_source, an_sql, a_parameters, single_value).rows (agent (a_row: TUPLE [id: STRING]; other: JRS_ROWS_ITERATOR_DATA): BOOLEAN
 				do
 				  temp_set.force (a_row.id)
@@ -210,6 +211,11 @@ feature {NONE} -- Implementation
 		end
 
 	temp_set: DS_HASH_SET [STRING]
-
+			-- Temporary variable passed to agent, and Eiffel doesn't
+			-- support closures.
+		once
+			create Result.make (16)
+			temp_set.set_equality_tester (string_equality_tester)
+		end
 
 end

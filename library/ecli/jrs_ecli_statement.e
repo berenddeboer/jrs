@@ -19,6 +19,7 @@ inherit
 
 	ECLI_STATEMENT
 		redefine
+			make,
 			fill_results
 		end
 
@@ -33,6 +34,15 @@ inherit {NONE}
 create
 
 	make
+
+
+feature {NONE} -- Initialization
+
+	make (a_session : ECLI_SESSION)
+		do
+			create results_tuple
+			precursor (a_session)
+		end
 
 
 feature -- Basic operations
@@ -148,10 +158,9 @@ feature {NONE} -- Implementation
 			column: ECLI_VALUE
 			i: INTEGER
 			v: ARRAY [ECLI_VALUE]
-			s: ECLI_STRING
 		do
-			create s.make_longvarchar (256)
-			create v.make_filled (s, 1, result_columns_count)
+			create {ECLI_STRING} column.make_longvarchar (256)
+			create v.make_filled (column, 1, result_columns_count)
 			from
 				i := v.lower
 			until

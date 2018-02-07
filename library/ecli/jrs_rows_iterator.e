@@ -29,6 +29,7 @@ feature {NONE} -- Initialisation
 		do
 			stmt := a_stmt
 			row_format := a_row_format
+			create config.make (Current)
 		end
 
 
@@ -49,7 +50,6 @@ feature -- Command
 		do
 			if stmt.is_executed and then stmt.has_result_set then
 				stmt.tuple_bind (row_format)
-				create config.make (Current)
 				from
 					stmt.start
 				until
