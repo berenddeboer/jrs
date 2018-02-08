@@ -5,7 +5,7 @@
 		<option warning="true" full_class_checking="true" syntax="standard">
     </option>
 		<capability>
-			<void_safety support="transitional" use="transitional"/>
+			<void_safety support="all" use="all"/>
 			<concurrency support="none" use="none"/>
 		</capability>
 		<library name="base" location="$ISE_LIBRARY/library/base/base.ecf"/>
