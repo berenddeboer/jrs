@@ -169,7 +169,6 @@ feature -- Commands
 
 	cd (a_directory: STRING)
 		require
-			is_valid_directory_name: is_valid_directory_name (a_directory)
 			directory_exists: is_directory (a_directory)
 		do
 			fs.change_directory (a_directory)
