@@ -71,5 +71,15 @@ feature -- Converting iterators
 			not_void: Result /= Void
 		end
 
+	first_line: READABLE_STRING_GENERAL
+			-- First line if exists, else the empty string
+		do
+			start
+			if not after and then attached last_item as s then
+				Result := s
+			else
+				Result := ""
+			end
+		end
 
 end
