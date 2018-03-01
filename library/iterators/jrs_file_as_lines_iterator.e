@@ -65,8 +65,8 @@ feature {NONE} -- Implementation
 				end
 				if wrapped_last_item.end_of_input then
 					wrapped_iterator.forth
-					if not wrapped_iterator.after then
-						wrapped_last_item.read_line
+					if not wrapped_iterator.after and then attached wrapped_iterator.last_item as next_wrapped_last_item then
+						next_wrapped_last_item.read_line
 					end
 				end
 			end
