@@ -32,9 +32,6 @@ create
 feature -- Access
 
 	last_item: detachable STDC_TEXT_FILE
-		do
-			Result := internal_last_item
-		end
 
 
 feature -- Movement
@@ -44,6 +41,8 @@ feature -- Movement
 		do
 			precursor
 			open_next_readable_file
+		ensure then
+			file_is_open: not after implies attached last_item as li and then li.is_open_read
 		end
 
 	forth
@@ -51,6 +50,8 @@ feature -- Movement
 		do
 			precursor
 			open_next_readable_file
+		ensure then
+			file_is_open: not after implies attached last_item as li and then li.is_open_read
 		end
 
 
@@ -64,8 +65,6 @@ feature -- Converting iterators
 
 feature {NONE} -- Implementation
 
-	internal_last_item: detachable like last_item
-
 	open_next_readable_file
 			-- Find next file that can be read, skip files that cannot be
 			-- opened for reading.
@@ -78,38 +77,42 @@ feature {NONE} -- Implementation
 					after or else found
 				loop
 					attempt_open_file
-					if attached internal_last_item as ili then
-						found := ili.is_open_read
+					if attached last_item as li then
+						found := li.is_open_read
 					end
 					if not found then
 						wrapped_iterator.forth
 					end
 				end
 			else
-				close_internal_last_item
+				close_last_item
 			end
+		ensure
+			file_is_open: not after implies attached last_item as li and then li.is_open_read
 		end
 
 	attempt_open_file
 		require
 			not_after: not wrapped_iterator.after
 		local
-			ili: like internal_last_item
+			ili: like last_item
+			n: READABLE_STRING_8
 		do
-			close_internal_last_item
+			close_last_item
 			if attached wrapped_iterator.last_item as li then
-				create ili.make (li.out)
-				internal_last_item := ili
+				n := li.out
+				create ili.make (n)
+				last_item := ili
 				ili.set_continue_on_error
-				ili.open_read (li.out)
+				ili.open_read (n)
 			end
 		ensure
-			internal_last_item_not_void: attached internal_last_item
+			last_item_not_void: attached last_item
 		end
 
-	close_internal_last_item
+	close_last_item
 		do
-			if attached internal_last_item as file and then file.is_open then
+			if attached last_item as file and then file.is_open then
 				file.close
 			end
 		end
@@ -117,6 +120,6 @@ feature {NONE} -- Implementation
 
 invariant
 
-	all_files_closed_after_reading: after implies not attached internal_last_item as li or else not li.is_open
+	all_files_closed_after_reading: after implies not attached last_item as li or else not li.is_open
 
 end
