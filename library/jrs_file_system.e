@@ -15,7 +15,7 @@ class
 	JRS_FILE_SYSTEM
 
 
-inherit
+inherit {NONE}
 
 	JRS_STRING_ROUTINES
 

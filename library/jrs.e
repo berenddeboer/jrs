@@ -22,17 +22,17 @@ inherit
 			echo as terminal_echo
 		end
 
+	JRS_EXEC
+		rename
+			echo as terminal_echo
+		end
+
 
 inherit {NONE}
 
 	JRS_STRING_ROUTINES
 
 	JRS_DATE_TIME_ROUTINES
-
-	JRS_EXEC
-		rename
-			echo as terminal_echo
-		end
 
 	JRS_RESOLVER
 
