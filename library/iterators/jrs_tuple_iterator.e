@@ -64,6 +64,7 @@ feature {NONE} -- Implementation
 
 	new_tuple (a_line: READABLE_STRING_GENERAL): G
 			-- Used by `tuple'.
+			-- TODO: support DOUBLE
 		local
 			list: like split
 			i: INTEGER
@@ -107,6 +108,27 @@ feature {NONE} -- Implementation
 				end
 				i := i + 1
 				list.forth
+			variant
+				t.upper - i
+			end
+
+			-- In case we didn't get all fields, clear them out
+			from
+			until
+				i > t.upper
+			loop
+				if t.is_boolean_item (i) then
+					t.put_boolean (False, i)
+				elseif t.is_integer_item (i) then
+					t.put_integer (0, i)
+				elseif t.is_integer_64_item (i) then
+					t.put_integer_64 (0, i)
+				elseif t.is_reference_item (i) then
+					t.put (Void, i)
+				end
+				i := i + 1
+			variant
+				t.upper - i
 			end
 			Result := t
 		end
