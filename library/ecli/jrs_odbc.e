@@ -124,7 +124,7 @@ feature -- Status
 		end
 
 	query_set (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE): DS_HASH_SET [STRING]
-			-- `an_sql' should be a query that returns a single value
+			-- `an_sql' should be a query that returns a single value per row
 			-- (more values are ignored).
 			-- The value for every row is returned as a set
 		require
