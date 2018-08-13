@@ -122,7 +122,7 @@ feature {NONE} -- Implementation
 		do
 			create h.make (result_columns_count)
 			results_tuple.put (h, results_tuple.lower)
-			create {ECLI_STRING} column.make_longvarchar (0)
+			create {ECLI_STRING} column.make_longvarchar (1)
 			create v.make_filled (column, 1, result_columns_count)
 			from
 				i := v.lower
@@ -173,8 +173,16 @@ feature {NONE} -- Implementation
 				inspect results_tuple.item_code (i)
 				when boolean_code then
 					create {ECLI_BOOLEAN} column.make
+				when integer_8_code then
+					create {ECLI_INTEGER_16} column.make
+				when integer_16_code then
+					create {ECLI_INTEGER_16} column.make
 				when integer_32_code then
 					create {ECLI_INTEGER} column.make
+				when integer_64_code then
+					create {ECLI_INTEGER_64} column.make
+				when real_64_code then
+					create {ECLI_REAL} column.make
 				when reference_code then
 					if results_tuple.valid_type_for_index (string_type, i) then
 						-- Allocate more, could be UTF8 so it appears size
@@ -203,11 +211,15 @@ feature {NONE} -- Implementation
 						end
 					else
 						-- Cannot transform
-						raise ("Cannot bind ODBC data to a class of this type")
+						if attached results_tuple.reference_item (i) as o then
+							raise ("Cannot bind ODBC data to a class of this type: " + o.generator)
+						else
+							raise ("Cannot bind ODBC data to a class of this type: <Void>")
+						end
 					end
 				else
 					-- Cannot transform
-					raise ("Cannot bind ODBC data to a class of this type")
+					raise ("No support to bind ODBC data to a class of this type: " + results_tuple.item_code (i).out)
 				end
 				v.put (column, i)
 				i := i + 1
@@ -266,9 +278,27 @@ feature {NONE} -- Implementation
 					else
 						results_tuple.put (False, i)
 					end
+				when integer_8_code then
+					if not v.is_null then
+						results_tuple.put (v.as_integer, i)
+					else
+						results_tuple.put (0, i)
+					end
+				when integer_16_code then
+					if not v.is_null then
+						results_tuple.put (v.as_integer, i)
+					else
+						results_tuple.put (0, i)
+					end
 				when integer_32_code then
 					if not v.is_null then
 						results_tuple.put (v.as_integer, i)
+					else
+						results_tuple.put (0, i)
+					end
+				when integer_64_code then
+					if not v.is_null then
+						results_tuple.put (v.as_integer_64, i)
 					else
 						results_tuple.put (0, i)
 					end
@@ -287,6 +317,7 @@ feature {NONE} -- Implementation
 					end
 				else
 					-- Oops, can't copy
+					raise ("Oops, can't copy data!")
 				end
 				i := i + 1
 			end

@@ -35,10 +35,11 @@ inherit {NONE}
 
 feature -- Command
 
-	execute_sql (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE)
+	execute_sql (a_data_source: STRING; an_sql: STRING; a_parameters: detachable TUPLE)
 		require
 			data_source_not_empty: a_data_source /= Void and then not a_data_source.is_empty
 			not_empty: an_sql /= Void and then not an_sql.is_empty
+			parameters_valid: valid_format (an_sql, a_parameters)
 		local
 			stmt: JRS_ECLI_STATEMENT
 			sql: STRING
@@ -61,13 +62,13 @@ feature -- Command
 			end
 		end
 
-	set_row (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE; a_row: TUPLE)
-			-- Execute query, and retrieve a single row if query returns
-			-- results, and put this in `a_row'.
+	set_row (a_data_source: STRING; an_sql: STRING; a_parameters: detachable TUPLE; a_row: TUPLE)
+			-- Execute query, and return result, if any, in `a_row'.
 		require
 			data_source_not_empty: a_data_source /= Void and then not a_data_source.is_empty
 			not_empty: an_sql /= Void and then not an_sql.is_empty
 			row_not_empty: a_row /= Void
+			parameters_valid: valid_format (an_sql, a_parameters)
 		local
 			stmt: JRS_ECLI_STATEMENT
 			sql: STRING
@@ -96,6 +97,7 @@ feature -- Status
 			data_source_not_empty: a_data_source /= Void and then not a_data_source.is_empty
 			not_empty: an_sql /= Void and then not an_sql.is_empty
 			row_format_not_void: a_row_format /= Void
+			parameters_valid: valid_format (an_sql, a_parameters)
 		local
 			stmt: JRS_ECLI_STATEMENT
 			sql: STRING
@@ -107,7 +109,7 @@ feature -- Status
 			create Result.make (stmt, a_row_format)
 		end
 
-	query_value (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE): detachable STRING
+	query_value (a_data_source: STRING; an_sql: STRING; a_parameters: detachable TUPLE): detachable STRING
 			-- `an_sql' should be a query that returns a single value
 			-- (more values are ignored) and a single row (more rows are
 			-- ignored).
@@ -115,6 +117,7 @@ feature -- Status
 		require
 			data_source_not_empty: a_data_source /= Void and then not a_data_source.is_empty
 			not_empty: an_sql /= Void and then not an_sql.is_empty
+			parameters_valid: valid_format (an_sql, a_parameters)
 		local
 			single_value: TUPLE [id: detachable STRING]
 		do
@@ -123,13 +126,14 @@ feature -- Status
 			Result := single_value.id
 		end
 
-	query_set (a_data_source: STRING; an_sql: STRING; a_parameters: TUPLE): DS_HASH_SET [STRING]
+	query_set (a_data_source: STRING; an_sql: STRING; a_parameters: detachable TUPLE): DS_HASH_SET [STRING]
 			-- `an_sql' should be a query that returns a single value per row
 			-- (more values are ignored).
 			-- The value for every row is returned as a set
 		require
 			data_source_not_empty: a_data_source /= Void and then not a_data_source.is_empty
 			not_empty: an_sql /= Void and then not an_sql.is_empty
+			parameters_valid: valid_format (an_sql, a_parameters)
 		local
 			single_value: TUPLE [id: detachable STRING]
 		do

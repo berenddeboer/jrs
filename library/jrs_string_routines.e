@@ -172,7 +172,7 @@ feature -- String formatting
 			void_is_ok: s = Void and then (a_parameters = Void or else a_parameters.count = 0) implies Result
 		end
 
-	format (s: STRING; a_parameters: TUPLE): STRING
+	format (s: STRING; a_parameters: detachable TUPLE): STRING
 			-- `s' with replacement indicators replaced by values from
 			-- `a_parameters'
 		require
@@ -181,7 +181,7 @@ feature -- String formatting
 			Result := do_format (s, a_parameters, false)
 		end
 
-	format_sql (s: STRING; a_parameters: TUPLE): STRING
+	format_sql (s: STRING; a_parameters: detachable TUPLE): STRING
 			-- `s' with replacement indicators replaced by values from
 			-- `a_parameters'; in case the replacement indicator is $s,
 			-- any single quote in the replacement value is escaped.
@@ -193,7 +193,7 @@ feature -- String formatting
 			only_void_if: (s = Void) = (Result = Void)
 		end
 
-	do_format (s: STRING; a_parameters: TUPLE; an_escape_strings: BOOLEAN): STRING
+	do_format (s: STRING; a_parameters: detachable TUPLE; an_escape_strings: BOOLEAN): STRING
 			-- `s' with replacement indicators replaced by values from
 			-- `a_parameters';
 			-- if `an_escape_strings' then any string replacements are
