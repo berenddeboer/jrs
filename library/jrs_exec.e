@@ -32,14 +32,7 @@ feature -- Run things
 		do
 			create p.make_from_command_line (a_command)
 			p.set_capture_output (True)
-			p.execute
-			if attached p.fd_stdout as fd then
-				create {JRS_LINES_STREAM_ITERATOR} Result.make (fd)
-			else
-				create {JRS_STRING_ITERATOR} Result.make_from_string ("")
-			end
-			p.wait_for (False)
-			-- TODO: we need to call `wait_for' in our iterator as well, and close properly
+			create {JRS_LINES_EXEC_ITERATOR} Result.make (p)
 		ensure
 			not_void: Result /= Void
 		end
