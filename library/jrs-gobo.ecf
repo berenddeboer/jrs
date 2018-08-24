@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-16-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-16-0 http://www.eiffel.com/developers/xml/configuration-1-16-0.xsd" name="jrs" uuid="201e0e0e-a585-41f9-9240-d607763880fd" library_target="jrs">
+  <target name="jrs">
+    <root all_classes="true"/>
+    <option warning="true" full_class_checking="true" syntax="standard">
+    </option>
+    <capability>
+      <void_safety support="all" use="all"/>
+      <concurrency support="none" use="none"/>
+    </capability>
+    <library name="base" location="iron:base:base.ecf"/>
+    <library name="gobo_kernel" location="$GOBO/library/kernel/library.ecf"/>
+    <library name="gobo_argument" location="$GOBO/library/argument/library.ecf"/>
+    <library name="gobo_math" location="$GOBO/library/math/library.ecf"/>
+    <library name="gobo_parse" location="$GOBO/library/parse/library_skl.ecf"/>
+    <library name="gobo_pattern" location="$GOBO/library/pattern/library.ecf"/>
+    <library name="gobo_regexp" location="$GOBO/library/regexp/library.ecf"/>
+    <library name="gobo_string" location="$GOBO/library/string/library.ecf"/>
+    <library name="gobo_structure" location="$GOBO/library/structure/library.ecf"/>
+    <library name="gobo_time" location="$GOBO/library/time/library.ecf"/>
+    <library name="gobo_utility" location="$GOBO/library/utility/library.ecf"/>
+    <library name="gobo_xml" location="$GOBO/library/xml/library.ecf"/>
+    <library name="eposix" location="${EPOSIX}/eposix-gobo.ecf"/>
+
+    <cluster name="jrs" location="." recursive="true">
+      <file_rule>
+        <exclude>/ecli$</exclude>
+      </file_rule>
+    </cluster>
+  </target>
+</system>
