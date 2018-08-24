@@ -109,7 +109,7 @@ feature {NONE} -- Implementation
 				i := i + 1
 				list.forth
 			variant
-				t.upper - i
+				t.upper - i + 1
 			end
 
 			-- In case we didn't get all fields, clear them out
@@ -128,7 +128,7 @@ feature {NONE} -- Implementation
 				end
 				i := i + 1
 			variant
-				t.upper - i
+				t.upper - i + 1
 			end
 			Result := t
 		end
