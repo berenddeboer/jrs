@@ -39,15 +39,6 @@ feature {NONE} -- Initialisation
 feature -- Status
 
 	after: BOOLEAN
-		do
-			if process.is_terminated then
-				Result := True
-			elseif attached process.fd_stdout as fd then
-				Result := fd.end_of_input
-			else
-				Result := False
-			end
-		end
 
 
 feature -- Access
@@ -59,12 +50,10 @@ feature -- Movement
 
 	start
 		do
+			after := False
 			process.execute
 			-- TODO: probably need to check this executed OK
-			if attached process.fd_stdout as fd then
-				fd.read_line
-				last_item := fd.last_string
-			end
+			forth
 		end
 
 	forth
@@ -74,6 +63,7 @@ feature -- Movement
 				last_item := fd.last_string
 				if fd.end_of_input then
 					process.wait_for (True)
+					after := True
 				end
 			end
 		end
